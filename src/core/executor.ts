@@ -20,6 +20,23 @@ function stripLeadingSleep(command: string): string {
 	return command.replace(/^sleep\s+\d+\s*&&\s*/i, "");
 }
 
+/**
+ * Wrap a Windows command so paths with spaces are quoted for PowerShell.
+ * Detects .exe/.cmd/.bat/.ps1 paths containing spaces and uses & "path" syntax.
+ */
+function wrapWindowsCommand(command: string): string {
+	// Match an executable path at the start (with or without extension)
+	const match = command.match(/^(.+?\.\w{2,4})\s*(.*)/);
+	if (match) {
+		const exe = match[1].trim();
+		const args = match[2].trim();
+		if (exe.includes(" ") && !exe.startsWith('"') && !exe.startsWith("&")) {
+			return args ? `& "${exe}" ${args}` : `& "${exe}"`;
+		}
+	}
+	return command;
+}
+
 export function executeJob(job: Job, trigger: TriggerType, skipSleep = false): string {
 	const runId = createRun(job.id, trigger);
 	const startTime = Date.now();
@@ -30,15 +47,23 @@ export function executeJob(job: Job, trigger: TriggerType, skipSleep = false): s
 		status: "running",
 	} satisfies JobStatusChangeEvent);
 
-	const command = skipSleep ? stripLeadingSleep(job.command) : job.command;
+	let command = skipSleep ? stripLeadingSleep(job.command) : job.command;
 	let stdoutBuffer = "";
 	let stderrBuffer = "";
 
 	const isWin = detectOS() === "win32";
+
+	// On Windows, wrap executable paths containing spaces with quotes
+	// e.g. C:\Program Files\app.exe arg1 → & "C:\Program Files\app.exe" arg1
+	if (isWin) {
+		command = wrapWindowsCommand(command);
+	}
+
 	const child = spawn(command, [], {
-		shell: isWin ? "cmd.exe" : true,
+		shell: isWin ? "powershell.exe" : true,
 		stdio: "pipe",
 		detached: !isWin,
+		windowsHide: true,
 		env: { ...process.env, PYTHONUNBUFFERED: "1" },
 	});
 

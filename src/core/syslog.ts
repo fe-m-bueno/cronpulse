@@ -101,8 +101,8 @@ async function getWindowsRecentRuns(
 		const { stdout } = await execFileAsync("powershell", [
 			"-NoProfile",
 			"-Command",
-			`Get-WinEvent -FilterHashtable @{LogName='Microsoft-Windows-TaskScheduler/Operational'; Id=102; StartTime=(Get-Date).AddMinutes(-${sinceMinutesAgo})} -ErrorAction SilentlyContinue | Select-Object TimeCreated, Message | ConvertTo-Json`,
-		], { timeout: 10000 });
+			`[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; Get-WinEvent -FilterHashtable @{LogName='Microsoft-Windows-TaskScheduler/Operational'; Id=102; StartTime=(Get-Date).AddMinutes(-${sinceMinutesAgo})} -ErrorAction SilentlyContinue | Select-Object TimeCreated, Message | ConvertTo-Json`,
+		], { timeout: 10000, windowsHide: true });
 
 		if (!stdout.trim()) return [];
 

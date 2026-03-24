@@ -150,20 +150,20 @@ function readSchtasks(): RawCronEntry[] {
 	const entries: RawCronEntry[] = [];
 
 	try {
-		const output = execSync('schtasks /Query /FO CSV /V', {
+		const output = execSync('chcp 65001 >nul && schtasks /Query /FO CSV /V', {
 			encoding: "utf-8",
+			windowsHide: true,
+			shell: "cmd.exe",
 		});
 
 		const lines = output.split("\n").filter((l) => l.trim());
 		if (lines.length < 2) return entries;
 
-		// Parse CSV header
+		// Parse CSV header — match locale-agnostic (supports EN, PT-BR, ES, etc.)
 		const headers = parseCSVLine(lines[0]);
-		const taskNameIdx = headers.indexOf('"TaskName"');
-		const scheduleTypeIdx = headers.indexOf('"Schedule Type"');
-		const commandIdx = headers.findIndex((h) =>
-			h.includes("Task To Run"),
-		);
+		const taskNameIdx = findHeaderIndex(headers, ["TaskName", "Nome da Tarefa", "Nombre de tarea"]) ?? 1;
+		const scheduleTypeIdx = findHeaderIndex(headers, ["Schedule Type", "Tipo de Agendamento", "Tipo de programación"]) ?? -1;
+		const commandIdx = findHeaderIndex(headers, ["Task To Run", "Tarefa a Executar", "Tarea a ejecutar"]) ?? 8;
 
 		for (let i = 1; i < lines.length; i++) {
 			const fields = parseCSVLine(lines[i]);
@@ -189,6 +189,16 @@ function readSchtasks(): RawCronEntry[] {
 	}
 
 	return entries;
+}
+
+function findHeaderIndex(headers: string[], names: string[]): number | undefined {
+	for (const name of names) {
+		const idx = headers.findIndex((h) =>
+			h.replace(/"/g, "").trim().toLowerCase() === name.toLowerCase(),
+		);
+		if (idx !== -1) return idx;
+	}
+	return undefined;
 }
 
 function parseCSVLine(line: string): string[] {
