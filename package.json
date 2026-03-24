@@ -1,0 +1,42 @@
+{
+  "name": "cronpulse",
+  "version": "0.1.0",
+  "description": "Local-first cron job monitoring dashboard",
+  "type": "module",
+  "bin": {
+    "cronpulse": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "concurrently -n backend,frontend -c blue,green \"tsx watch src/cli.ts\" \"pnpm --dir frontend dev\"",
+    "build": "pnpm build:backend && pnpm build:frontend",
+    "build:backend": "tsup",
+    "build:frontend": "pnpm --dir frontend build",
+    "start": "node dist/cli.js",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "typecheck": "tsc --noEmit && pnpm --dir frontend typecheck"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.8",
+    "better-sqlite3": "^11.7.0",
+    "commander": "^13.1.0",
+    "cron-parser": "^5.0.6",
+    "hono": "^4.7.4",
+    "open": "^10.1.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/node": "^22.10.0",
+    "concurrently": "^9.1.0",
+    "tsup": "^8.3.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

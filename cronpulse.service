@@ -1,0 +1,15 @@
+[Unit]
+Description=CronPulse - Cron Job Monitoring Dashboard
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/home/felipebueno/.nvm/versions/node/v24.13.1/bin/node /home/felipebueno/Development/cronpulse/dist/cli.js --no-open
+WorkingDirectory=/home/felipebueno/Development/cronpulse
+Restart=always
+RestartSec=3
+Environment=NODE_ENV=production
+Environment=CRONPULSE_PORT=7575
+
+[Install]
+WantedBy=default.target

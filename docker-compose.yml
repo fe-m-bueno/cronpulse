@@ -1,0 +1,23 @@
+services:
+  cronpulse:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "${CRONPULSE_PORT:-7575}:7575"
+    volumes:
+      - cronpulse-data:/root/.cronpulse
+      - /var/spool/cron/crontabs:/host-crontabs:ro
+      - /etc/cron.d:/host-cron.d:ro
+    environment:
+      - CRONPULSE_DOCKER=true
+      - CRONPULSE_PORT=7575
+      - CRONPULSE_LOG_RETENTION=${CRONPULSE_LOG_RETENTION:-50}
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:7575/api/system"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  cronpulse-data:
