@@ -1,5 +1,5 @@
-import { Hono } from "hono";
 import { platform, uptime } from "node:os";
+import { Hono } from "hono";
 import { isDocker } from "../../core/detector.js";
 import { scanCrontab } from "../../core/scanner.js";
 import { getAllJobs } from "../../db/jobs.js";

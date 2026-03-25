@@ -1,11 +1,12 @@
 import { randomUUID } from "node:crypto";
-import { getAllJobs, updateJobStatus } from "../db/jobs.js";
 import { getDb } from "../db/index.js";
+import { getAllJobs, updateJobStatus } from "../db/jobs.js";
+import type { Job } from "../types/index.js";
 import { eventBus } from "./events.js";
 import { getNextRunTime } from "./parser.js";
 import { scanCrontabIfChanged } from "./scanner.js";
-import { getRecentCronRuns, commandMatchesCronLog } from "./syslog.js";
-import type { Job } from "../types/index.js";
+import { commandMatchesCronLog, getRecentCronRuns } from "./syslog.js";
+import type { CronLogEntry } from "./syslog.js";
 
 let scanInterval: ReturnType<typeof setInterval> | null = null;
 let statusInterval: ReturnType<typeof setInterval> | null = null;
@@ -53,8 +54,9 @@ async function checkJobs(): Promise<void> {
 		if (!job.enabled || job.status === "running") continue;
 
 		// Find ALL matching system log entries for this job
+		// On Windows (schtasks), match by task name; on Linux/Mac, match by command
 		const matchingLogs = cronLogs
-			.filter((log) => commandMatchesCronLog(job.command, log.command))
+			.filter((log) => matchJobToLog(job, log))
 			.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
 
 		// Record any system runs we haven't seen yet
@@ -112,9 +114,7 @@ async function checkJobs(): Promise<void> {
 				);
 
 				const cronpulseRun = db
-					.prepare(
-						"SELECT id FROM runs WHERE job_id = ? AND started_at >= ? LIMIT 1",
-					)
+					.prepare("SELECT id FROM runs WHERE job_id = ? AND started_at >= ? LIMIT 1")
 					.get(job.id, new Date(nextRun - 60_000).toISOString());
 
 				if (!ranSinceExpected && !cronpulseRun && job.status !== "overdue") {
@@ -130,4 +130,17 @@ async function checkJobs(): Promise<void> {
 			}
 		}
 	}
+}
+
+/**
+ * Match a job to a log entry. On Windows, Event Log entries contain the task name
+ * (e.g. "\MyBackup"), not the command. So we match against job.name for schtasks jobs.
+ */
+function matchJobToLog(job: Job, log: CronLogEntry): boolean {
+	if (log.taskName && job.source === "schtasks") {
+		// Windows: match task name from Event Log against job name
+		const normalize = (s: string) => s.replace(/^\\+/, "").toLowerCase().trim();
+		return normalize(job.name) === normalize(log.taskName);
+	}
+	return commandMatchesCronLog(job.command, log.command);
 }

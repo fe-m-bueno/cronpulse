@@ -4,28 +4,25 @@ import { detectOS } from "./detector.js";
 
 const execFileAsync = promisify(execFile);
 
-interface CronLogEntry {
+export interface CronLogEntry {
 	timestamp: Date;
 	user: string;
 	command: string;
+	/** On Windows, this holds the task name from Event Log (used for matching instead of command) */
+	taskName?: string;
 }
 
-export async function getRecentCronRuns(
-	sinceMinutesAgo: number,
-): Promise<CronLogEntry[]> {
+export async function getRecentCronRuns(sinceMinutesAgo: number): Promise<CronLogEntry[]> {
 	const os = detectOS();
 	if (os === "win32") return getWindowsRecentRuns(sinceMinutesAgo);
 
 	try {
 		const since = `${sinceMinutesAgo} minutes ago`;
-		const { stdout } = await execFileAsync("journalctl", [
-			"-t",
-			"CRON",
-			"--since",
-			since,
-			"--no-pager",
-			"-q",
-		], { timeout: 5000 });
+		const { stdout } = await execFileAsync(
+			"journalctl",
+			["-t", "CRON", "--since", since, "--no-pager", "-q"],
+			{ timeout: 5000 },
+		);
 
 		return parseJournalctlOutput(stdout);
 	} catch {
@@ -56,9 +53,25 @@ function parseJournalctlOutput(output: string): CronLogEntry[] {
 }
 
 const MONTHS: Record<string, number> = {
-	jan: 0, fev: 1, feb: 1, mar: 2, abr: 3, apr: 3, mai: 4, may: 4,
-	jun: 5, jul: 6, ago: 7, aug: 7, set: 8, sep: 8, out: 9, oct: 9,
-	nov: 10, dez: 11, dec: 11,
+	jan: 0,
+	fev: 1,
+	feb: 1,
+	mar: 2,
+	abr: 3,
+	apr: 3,
+	mai: 4,
+	may: 4,
+	jun: 5,
+	jul: 6,
+	ago: 7,
+	aug: 7,
+	set: 8,
+	sep: 8,
+	out: 9,
+	oct: 9,
+	nov: 10,
+	dez: 11,
+	dec: 11,
 };
 
 function parseJournalDate(dateStr: string): Date | null {
@@ -80,29 +93,26 @@ function parseJournalDate(dateStr: string): Date | null {
 
 async function parseSyslog(sinceMinutesAgo: number): Promise<CronLogEntry[]> {
 	try {
-		const { stdout } = await execFileAsync("grep", [
-			"CRON",
-			"/var/log/syslog",
-		], { timeout: 5000 });
+		const { stdout } = await execFileAsync("grep", ["CRON", "/var/log/syslog"], { timeout: 5000 });
 
 		const cutoff = new Date(Date.now() - sinceMinutesAgo * 60_000);
-		return parseJournalctlOutput(stdout).filter(
-			(e) => e.timestamp >= cutoff,
-		);
+		return parseJournalctlOutput(stdout).filter((e) => e.timestamp >= cutoff);
 	} catch {
 		return [];
 	}
 }
 
-async function getWindowsRecentRuns(
-	sinceMinutesAgo: number,
-): Promise<CronLogEntry[]> {
+async function getWindowsRecentRuns(sinceMinutesAgo: number): Promise<CronLogEntry[]> {
 	try {
-		const { stdout } = await execFileAsync("powershell", [
-			"-NoProfile",
-			"-Command",
-			`[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; Get-WinEvent -FilterHashtable @{LogName='Microsoft-Windows-TaskScheduler/Operational'; Id=102; StartTime=(Get-Date).AddMinutes(-${sinceMinutesAgo})} -ErrorAction SilentlyContinue | Select-Object TimeCreated, Message | ConvertTo-Json`,
-		], { timeout: 10000, windowsHide: true });
+		const { stdout } = await execFileAsync(
+			"powershell",
+			[
+				"-NoProfile",
+				"-Command",
+				`[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; Get-WinEvent -FilterHashtable @{LogName='Microsoft-Windows-TaskScheduler/Operational'; Id=102; StartTime=(Get-Date).AddMinutes(-${sinceMinutesAgo})} -ErrorAction SilentlyContinue | Select-Object TimeCreated, Message | ConvertTo-Json`,
+			],
+			{ timeout: 10000, windowsHide: true },
+		);
 
 		if (!stdout.trim()) return [];
 
@@ -113,10 +123,12 @@ async function getWindowsRecentRuns(
 		return items
 			.map((e: { TimeCreated: string; Message: string }) => {
 				const taskMatch = e.Message?.match(/Task .+?"(.+?)"/);
+				const taskPath = taskMatch?.[1] || e.Message || "";
 				return {
 					timestamp: new Date(e.TimeCreated),
 					user: "SYSTEM",
-					command: taskMatch?.[1] || e.Message || "",
+					command: taskPath,
+					taskName: taskPath,
 				};
 			})
 			.filter((e: CronLogEntry) => e.timestamp >= cutoff);
@@ -130,12 +142,8 @@ async function getWindowsRecentRuns(
  * Uses fuzzy matching — checks if the cron log command contains the job command
  * or vice versa (cron logs may truncate or wrap commands differently).
  */
-export function commandMatchesCronLog(
-	jobCommand: string,
-	cronLogCommand: string,
-): boolean {
-	const normalize = (s: string) =>
-		s.replace(/\s+/g, " ").trim();
+export function commandMatchesCronLog(jobCommand: string, cronLogCommand: string): boolean {
+	const normalize = (s: string) => s.replace(/\s+/g, " ").trim();
 
 	const a = normalize(jobCommand);
 	const b = normalize(cronLogCommand);

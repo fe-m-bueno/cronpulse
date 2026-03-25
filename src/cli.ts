@@ -1,17 +1,14 @@
 import { serve } from "@hono/node-server";
 import { program } from "commander";
-import { getDb, closeDb } from "./db/index.js";
-import { getAllJobs, resetOrphanedRunningJobs } from "./db/jobs.js";
-import { executeJob } from "./core/executor.js";
 import { eventBus } from "./core/events.js";
-import { startWatcher, stopWatcher } from "./core/watcher.js";
+import { executeJob } from "./core/executor.js";
 import { scanCrontab } from "./core/scanner.js";
+import { startWatcher, stopWatcher } from "./core/watcher.js";
+import { closeDb, getDb } from "./db/index.js";
+import { getAllJobs, resetOrphanedRunningJobs } from "./db/jobs.js";
 import { createApp } from "./server/index.js";
 
-program
-	.name("cronpulse")
-	.description("Local-first cron job monitoring dashboard")
-	.version("0.1.0");
+program.name("cronpulse").description("Local-first cron job monitoring dashboard").version("0.1.0");
 
 program
 	.option("-p, --port <number>", "Server port", "7575")
@@ -66,25 +63,13 @@ program
 		}
 
 		console.log(`\n  Found ${jobs.length} cron job(s):\n`);
-		console.log(
-			"  " +
-				"NAME".padEnd(30) +
-				"SCHEDULE".padEnd(25) +
-				"STATUS".padEnd(12) +
-				"NEXT RUN",
-		);
-		console.log("  " + "─".repeat(90));
+		console.log(`  ${"NAME".padEnd(30)}${"SCHEDULE".padEnd(25)}${"STATUS".padEnd(12)}NEXT RUN`);
+		console.log(`  ${"─".repeat(90)}`);
 
 		for (const job of jobs) {
-			const nextRun = job.nextRunAt
-				? new Date(job.nextRunAt).toLocaleString()
-				: "—";
+			const nextRun = job.nextRunAt ? new Date(job.nextRunAt).toLocaleString() : "—";
 			console.log(
-				"  " +
-					job.name.slice(0, 28).padEnd(30) +
-					(job.scheduleHuman || job.scheduleExpression).slice(0, 23).padEnd(25) +
-					job.status.padEnd(12) +
-					nextRun,
+				`  ${job.name.slice(0, 28).padEnd(30)}${(job.scheduleHuman || job.scheduleExpression).slice(0, 23).padEnd(25)}${job.status.padEnd(12)}${nextRun}`,
 			);
 		}
 		console.log();
@@ -100,9 +85,7 @@ program
 
 		const jobs = getAllJobs();
 		const matches = jobs.filter(
-			(j) =>
-				j.id.startsWith(nameOrId) ||
-				j.name.toLowerCase().includes(nameOrId.toLowerCase()),
+			(j) => j.id.startsWith(nameOrId) || j.name.toLowerCase().includes(nameOrId.toLowerCase()),
 		);
 
 		if (matches.length === 0) {
@@ -116,7 +99,7 @@ program
 			for (const m of matches) {
 				console.log(`    ${m.id.slice(0, 8)}  ${m.name}`);
 			}
-			console.log(`\n  Be more specific.\n`);
+			console.log("\n  Be more specific.\n");
 			closeDb();
 			process.exit(1);
 		}

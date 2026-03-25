@@ -1,5 +1,5 @@
-import { cn } from "@/lib/utils";
 import type { Job } from "@/lib/api";
+import { cn } from "@/lib/utils";
 
 type Status = Job["status"] | "running" | "succeeded" | "failed";
 
@@ -18,7 +18,9 @@ export function StatusBadge({ status }: { status: Status }) {
 		<span className={cn("inline-flex items-center gap-1.5 text-xs", c.textColor)}>
 			<span className="relative flex h-2 w-2">
 				{status === "running" && (
-					<span className={cn("absolute inset-0 rounded-full animate-ping opacity-75", c.dotColor)} />
+					<span
+						className={cn("absolute inset-0 rounded-full animate-ping opacity-75", c.dotColor)}
+					/>
 				)}
 				<span className={cn("relative rounded-full h-2 w-2", c.dotColor)} />
 			</span>

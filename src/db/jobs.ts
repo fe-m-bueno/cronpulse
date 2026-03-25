@@ -102,9 +102,9 @@ export function updateJobStatus(
 
 export function resetOrphanedRunningJobs(): number {
 	const db = getDb();
-	const result = db.prepare(
-		"UPDATE jobs SET status = 'idle', updated_at = ? WHERE status = 'running'",
-	).run(new Date().toISOString());
+	const result = db
+		.prepare("UPDATE jobs SET status = 'idle', updated_at = ? WHERE status = 'running'")
+		.run(new Date().toISOString());
 	// Also mark any running runs as failed
 	db.prepare(
 		"UPDATE runs SET status = 'failed', finished_at = ?, exit_code = -1, stderr = 'Process lost (server restarted)' WHERE status = 'running'",

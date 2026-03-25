@@ -1,14 +1,14 @@
-import { useEffect, useState, useCallback, useRef } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Countdown } from "@/components/Countdown";
+import { LogViewer } from "@/components/LogViewer";
+import { RunHistory } from "@/components/RunHistory";
+import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { StatusBadge } from "@/components/StatusBadge";
-import { Countdown } from "@/components/Countdown";
-import { RunHistory } from "@/components/RunHistory";
-import { LogViewer } from "@/components/LogViewer";
-import { api, type Job, type Run } from "@/lib/api";
 import { useSSE } from "@/hooks/useSSE";
-import { ArrowLeft, Play, Square, Timer, Calendar } from "lucide-react";
+import { type Job, type Run, api } from "@/lib/api";
+import { ArrowLeft, Calendar, Play, Square, Timer } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 
 export function JobDetail() {
 	const { id } = useParams<{ id: string }>();
@@ -24,10 +24,7 @@ export function JobDetail() {
 	const loadData = useCallback(async () => {
 		if (!id) return;
 		try {
-			const [jobData, runsData] = await Promise.all([
-				api.fetchJob(id),
-				api.fetchRuns(id),
-			]);
+			const [jobData, runsData] = await Promise.all([api.fetchJob(id), api.fetchRuns(id)]);
 			setJob(jobData);
 			setRuns(runsData);
 			if (!hasSelectedInitialRun.current && runsData.length > 0) {
@@ -41,7 +38,9 @@ export function JobDetail() {
 		}
 	}, [id]);
 
-	useEffect(() => { loadData(); }, [loadData]);
+	useEffect(() => {
+		loadData();
+	}, [loadData]);
 
 	useEffect(() => {
 		const last = messages[messages.length - 1];
@@ -95,7 +94,9 @@ export function JobDetail() {
 		return (
 			<div className="border rounded-lg py-20 text-center">
 				<p className="text-muted-foreground">Job not found</p>
-				<Link to="/" className="text-sm text-foreground underline mt-2 inline-block">Back</Link>
+				<Link to="/" className="text-sm text-foreground underline mt-2 inline-block">
+					Back
+				</Link>
 			</div>
 		);
 	}
@@ -144,22 +145,12 @@ export function JobDetail() {
 							</label>
 						)}
 						{job.status === "running" ? (
-							<Button
-								size="sm"
-								variant="destructive"
-								onClick={handleStop}
-								className="gap-1.5"
-							>
+							<Button size="sm" variant="destructive" onClick={handleStop} className="gap-1.5">
 								<Square className="h-3.5 w-3.5" />
 								Stop
 							</Button>
 						) : (
-							<Button
-								size="sm"
-								onClick={handleRun}
-								disabled={running}
-								className="gap-1.5"
-							>
+							<Button size="sm" onClick={handleRun} disabled={running} className="gap-1.5">
 								<Play className="h-3.5 w-3.5" />
 								Run Now
 							</Button>
@@ -177,7 +168,11 @@ export function JobDetail() {
 			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 				<div className="space-y-3">
 					<h2 className="text-sm font-medium">Run History</h2>
-					<RunHistory runs={runs} selectedRunId={selectedRun?.id ?? null} onSelectRun={handleSelectRun} />
+					<RunHistory
+						runs={runs}
+						selectedRunId={selectedRun?.id ?? null}
+						onSelectRun={handleSelectRun}
+					/>
 				</div>
 				<div className="space-y-3">
 					<h2 className="text-sm font-medium">Output</h2>

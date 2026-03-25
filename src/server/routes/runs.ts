@@ -1,10 +1,6 @@
 import { Hono } from "hono";
 import { streamSSE } from "hono/streaming";
-import {
-	eventBus,
-	type RunOutputEvent,
-	type RunCompleteEvent,
-} from "../../core/events.js";
+import { type RunCompleteEvent, type RunOutputEvent, eventBus } from "../../core/events.js";
 import { getJobById } from "../../db/jobs.js";
 import { getRunById, getRunsByJobId } from "../../db/runs.js";
 

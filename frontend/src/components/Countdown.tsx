@@ -1,10 +1,8 @@
-import { useEffect, useState } from "react";
 import { formatCountdown } from "@/lib/utils";
+import { useEffect, useState } from "react";
 
 export function Countdown({ targetDate }: { targetDate: string | null }) {
-	const [display, setDisplay] = useState(() =>
-		targetDate ? formatCountdown(targetDate) : "—",
-	);
+	const [display, setDisplay] = useState(() => (targetDate ? formatCountdown(targetDate) : "—"));
 
 	useEffect(() => {
 		if (!targetDate) return;
@@ -14,9 +12,5 @@ export function Countdown({ targetDate }: { targetDate: string | null }) {
 		return () => clearInterval(interval);
 	}, [targetDate]);
 
-	return (
-		<span className="text-xs tabular-nums text-muted-foreground">
-			{display}
-		</span>
-	);
+	return <span className="text-xs tabular-nums text-muted-foreground">{display}</span>;
 }

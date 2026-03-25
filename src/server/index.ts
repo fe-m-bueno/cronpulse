@@ -1,12 +1,12 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { Hono } from "hono";
 import { serveStatic } from "@hono/node-server/serve-static";
+import { Hono } from "hono";
 import { corsMiddleware } from "./middleware/cors.js";
+import { eventsRouter } from "./routes/events.js";
 import { jobsRouter } from "./routes/jobs.js";
 import { runsRouter } from "./routes/runs.js";
 import { systemRouter } from "./routes/system.js";
-import { eventsRouter } from "./routes/events.js";
 
 export function createApp(): Hono {
 	const app = new Hono();
@@ -23,9 +23,7 @@ export function createApp(): Hono {
 
 	// Cache index.html in memory for SPA fallback
 	const indexPath = join(process.cwd(), "dist", "frontend", "index.html");
-	const indexHtml = existsSync(indexPath)
-		? readFileSync(indexPath, "utf-8")
-		: null;
+	const indexHtml = existsSync(indexPath) ? readFileSync(indexPath, "utf-8") : null;
 
 	app.get("*", (c) => {
 		if (indexHtml) {

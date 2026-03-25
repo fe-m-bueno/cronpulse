@@ -3,13 +3,13 @@ import { updateJobStatus } from "../db/jobs.js";
 import { createRun, pruneRuns, updateRun } from "../db/runs.js";
 import type { Job, TriggerType } from "../types/index.js";
 import { detectOS } from "./detector.js";
-import { getNextRunTime } from "./parser.js";
 import {
-	eventBus,
-	type RunOutputEvent,
-	type RunCompleteEvent,
 	type JobStatusChangeEvent,
+	type RunCompleteEvent,
+	type RunOutputEvent,
+	eventBus,
 } from "./events.js";
+import { getNextRunTime } from "./parser.js";
 
 const MAX_BUFFER_SIZE = 1024 * 1024;
 const maxKeep = Number(process.env.CRONPULSE_LOG_RETENTION || "50");

@@ -1,7 +1,7 @@
+import { getAllJobs, removeStaleJobs, upsertJob } from "../db/jobs.js";
 import { readCrontab } from "./detector.js";
-import { generateJobId, getNextRunTime, toHumanReadable } from "./parser.js";
-import { getAllJobs, upsertJob, removeStaleJobs } from "../db/jobs.js";
 import { eventBus } from "./events.js";
+import { generateJobId, getNextRunTime, toHumanReadable } from "./parser.js";
 
 export function scanCrontab(): { scanned: number } {
 	const entries = readCrontab();

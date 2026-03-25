@@ -73,16 +73,10 @@ export function updateRun(
 	db.prepare(`UPDATE runs SET ${sets.join(", ")} WHERE id = ?`).run(...values);
 }
 
-export function getRunsByJobId(
-	jobId: string,
-	limit = 20,
-	offset = 0,
-): Run[] {
+export function getRunsByJobId(jobId: string, limit = 20, offset = 0): Run[] {
 	const db = getDb();
 	const rows = db
-		.prepare(
-			"SELECT * FROM runs WHERE job_id = ? ORDER BY started_at DESC LIMIT ? OFFSET ?",
-		)
+		.prepare("SELECT * FROM runs WHERE job_id = ? ORDER BY started_at DESC LIMIT ? OFFSET ?")
 		.all(jobId, limit, offset);
 	return rows.map((row) => rowToRun(row as Record<string, unknown>));
 }

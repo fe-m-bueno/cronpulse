@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { api, type Job } from "../lib/api";
+import { type Job, api } from "../lib/api";
 import { useSSE } from "./useSSE";
 
 export function useJobs() {
@@ -29,10 +29,7 @@ export function useJobs() {
 	useEffect(() => {
 		const lastMessage = messages[messages.length - 1];
 		if (!lastMessage) return;
-		if (
-			lastMessage.event === "job:status-change" ||
-			lastMessage.event === "jobs:updated"
-		) {
+		if (lastMessage.event === "job:status-change" || lastMessage.event === "jobs:updated") {
 			refetch();
 		}
 	}, [messages, refetch]);

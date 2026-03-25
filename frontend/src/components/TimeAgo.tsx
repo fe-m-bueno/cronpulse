@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
 import { timeAgo } from "@/lib/utils";
+import { useEffect, useState } from "react";
 
 export function TimeAgo({ date }: { date: string }) {
 	const [display, setDisplay] = useState(() => timeAgo(date));

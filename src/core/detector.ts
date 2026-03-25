@@ -14,8 +14,7 @@ export function detectOS(): "linux" | "darwin" | "win32" {
 let _isDocker: boolean | null = null;
 export function isDocker(): boolean {
 	if (_isDocker !== null) return _isDocker;
-	_isDocker =
-		process.env.CRONPULSE_DOCKER === "true" || existsSync("/.dockerenv");
+	_isDocker = process.env.CRONPULSE_DOCKER === "true" || existsSync("/.dockerenv");
 	return _isDocker;
 }
 
@@ -66,10 +65,7 @@ function readUnixCrontab(): RawCronEntry[] {
 	return entries;
 }
 
-export function parseCrontabOutput(
-	output: string,
-	source: "crontab" | "cron.d",
-): RawCronEntry[] {
+export function parseCrontabOutput(output: string, source: "crontab" | "cron.d"): RawCronEntry[] {
 	const entries: RawCronEntry[] = [];
 	const lines = output.split("\n");
 
@@ -83,9 +79,7 @@ export function parseCrontabOutput(
 		const specialMatch = trimmed.match(
 			/^(@(?:reboot|yearly|annually|monthly|weekly|daily|hourly|midnight))\s+(.+)$/i,
 		);
-		const standardMatch = trimmed.match(
-			/^((?:\S+\s+){4}\S+)\s+(.+)$/,
-		);
+		const standardMatch = trimmed.match(/^((?:\S+\s+){4}\S+)\s+(.+)$/);
 
 		const match = specialMatch || standardMatch;
 		if (!match) continue;
@@ -122,9 +116,32 @@ export function parseCrontabOutput(
 }
 
 const SHELL_BUILTINS = new Set([
-	"[", "[[", "test", "cd", "echo", "sleep", "if", "then", "else", "fi",
-	"for", "do", "done", "while", "case", "esac", "true", "false", "exec",
-	"eval", "export", "source", ".", "set", "unset", "shift",
+	"[",
+	"[[",
+	"test",
+	"cd",
+	"echo",
+	"sleep",
+	"if",
+	"then",
+	"else",
+	"fi",
+	"for",
+	"do",
+	"done",
+	"while",
+	"case",
+	"esac",
+	"true",
+	"false",
+	"exec",
+	"eval",
+	"export",
+	"source",
+	".",
+	"set",
+	"unset",
+	"shift",
 ]);
 
 function generateNameFromCommand(command: string): string {
@@ -150,7 +167,7 @@ function readSchtasks(): RawCronEntry[] {
 	const entries: RawCronEntry[] = [];
 
 	try {
-		const output = execSync('chcp 65001 >nul && schtasks /Query /FO CSV /V', {
+		const output = execSync("chcp 65001 >nul && schtasks /Query /FO CSV /V", {
 			encoding: "utf-8",
 			windowsHide: true,
 			shell: "cmd.exe",
@@ -161,9 +178,13 @@ function readSchtasks(): RawCronEntry[] {
 
 		// Parse CSV header — match locale-agnostic (supports EN, PT-BR, ES, etc.)
 		const headers = parseCSVLine(lines[0]);
-		const taskNameIdx = findHeaderIndex(headers, ["TaskName", "Nome da Tarefa", "Nombre de tarea"]) ?? 1;
-		const scheduleTypeIdx = findHeaderIndex(headers, ["Schedule Type", "Tipo de Agendamento", "Tipo de programación"]) ?? -1;
-		const commandIdx = findHeaderIndex(headers, ["Task To Run", "Tarefa a Executar", "Tarea a ejecutar"]) ?? 8;
+		const taskNameIdx =
+			findHeaderIndex(headers, ["TaskName", "Nome da Tarefa", "Nombre de tarea"]) ?? 1;
+		const scheduleTypeIdx =
+			findHeaderIndex(headers, ["Schedule Type", "Tipo de Agendamento", "Tipo de programación"]) ??
+			-1;
+		const commandIdx =
+			findHeaderIndex(headers, ["Task To Run", "Tarefa a Executar", "Tarea a ejecutar"]) ?? 8;
 
 		for (let i = 1; i < lines.length; i++) {
 			const fields = parseCSVLine(lines[i]);
@@ -193,8 +214,8 @@ function readSchtasks(): RawCronEntry[] {
 
 function findHeaderIndex(headers: string[], names: string[]): number | undefined {
 	for (const name of names) {
-		const idx = headers.findIndex((h) =>
-			h.replace(/"/g, "").trim().toLowerCase() === name.toLowerCase(),
+		const idx = headers.findIndex(
+			(h) => h.replace(/"/g, "").trim().toLowerCase() === name.toLowerCase(),
 		);
 		if (idx !== -1) return idx;
 	}

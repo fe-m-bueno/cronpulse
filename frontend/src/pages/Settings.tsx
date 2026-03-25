@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { api, type SystemInfo } from "@/lib/api";
-import { Save, RotateCcw } from "lucide-react";
+import { type SystemInfo, api } from "@/lib/api";
+import { RotateCcw, Save } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export function SettingsPage() {
 	const [system, setSystem] = useState<SystemInfo | null>(null);
@@ -30,8 +30,21 @@ export function SettingsPage() {
 			<section className="space-y-3">
 				<h2 className="text-sm font-medium">Configuration</h2>
 				<div className="border rounded-lg p-4 space-y-4">
-					<Field id="retention" label="Log retention" hint="Runs kept per job" type="number" defaultValue={50} />
-					<Field id="port" label="Port" hint="Requires restart" type="number" defaultValue={7575} readOnly />
+					<Field
+						id="retention"
+						label="Log retention"
+						hint="Runs kept per job"
+						type="number"
+						defaultValue={50}
+					/>
+					<Field
+						id="port"
+						label="Port"
+						hint="Requires restart"
+						type="number"
+						defaultValue={7575}
+						readOnly
+					/>
 					<div className="flex gap-2 pt-2">
 						<Button size="sm" className="gap-1.5 text-xs">
 							<Save className="h-3.5 w-3.5" />
@@ -57,12 +70,26 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 	);
 }
 
-function Field({ id, label, hint, type, defaultValue, readOnly }: {
-	id: string; label: string; hint: string; type: string; defaultValue: number; readOnly?: boolean;
+function Field({
+	id,
+	label,
+	hint,
+	type,
+	defaultValue,
+	readOnly,
+}: {
+	id: string;
+	label: string;
+	hint: string;
+	type: string;
+	defaultValue: number;
+	readOnly?: boolean;
 }) {
 	return (
 		<div className="space-y-1">
-			<label htmlFor={id} className="text-sm">{label}</label>
+			<label htmlFor={id} className="text-sm">
+				{label}
+			</label>
 			<input
 				id={id}
 				type={type}

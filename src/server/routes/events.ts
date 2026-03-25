@@ -1,10 +1,6 @@
 import { Hono } from "hono";
 import { streamSSE } from "hono/streaming";
-import {
-	eventBus,
-	type JobStatusChangeEvent,
-	type JobsUpdatedEvent,
-} from "../../core/events.js";
+import { type JobStatusChangeEvent, type JobsUpdatedEvent, eventBus } from "../../core/events.js";
 
 const events = new Hono();
 

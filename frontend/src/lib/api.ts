@@ -53,11 +53,12 @@ export const api = {
 	fetchJobs: () => apiFetch<Job[]>("/api/jobs"),
 	fetchJob: (id: string) => apiFetch<Job>(`/api/jobs/${id}`),
 	triggerRun: (jobId: string, skipSleep = false) =>
-		apiFetch<{ runId: string }>(`/api/jobs/${jobId}/run?skipSleep=${skipSleep}`, { method: "POST" }),
+		apiFetch<{ runId: string }>(`/api/jobs/${jobId}/run?skipSleep=${skipSleep}`, {
+			method: "POST",
+		}),
 	fetchRuns: (jobId: string, limit = 20, offset = 0) =>
 		apiFetch<Run[]>(`/api/jobs/${jobId}/runs?limit=${limit}&offset=${offset}`),
-	fetchRun: (jobId: string, runId: string) =>
-		apiFetch<Run>(`/api/jobs/${jobId}/runs/${runId}`),
+	fetchRun: (jobId: string, runId: string) => apiFetch<Run>(`/api/jobs/${jobId}/runs/${runId}`),
 	fetchSystem: () => apiFetch<SystemInfo>("/api/system"),
 	stopJob: (jobId: string) =>
 		apiFetch<{ stopped: number }>(`/api/jobs/${jobId}/stop`, { method: "POST" }),

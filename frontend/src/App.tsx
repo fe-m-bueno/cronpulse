@@ -1,11 +1,11 @@
-import { BrowserRouter, Link, Route, Routes, useLocation } from "react-router-dom";
-import { Activity, Moon, Settings, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Activity, Moon, Settings, Sun } from "lucide-react";
+import { BrowserRouter, Link, Route, Routes, useLocation } from "react-router-dom";
+import { useTheme } from "./hooks/useTheme";
+import { cn } from "./lib/utils";
 import { Dashboard } from "./pages/Dashboard";
 import { JobDetail } from "./pages/JobDetail";
 import { SettingsPage } from "./pages/Settings";
-import { useTheme } from "./hooks/useTheme";
-import { cn } from "./lib/utils";
 
 function NavLink({ to, children }: { to: string; children: React.ReactNode }) {
 	const location = useLocation();
@@ -16,9 +16,7 @@ function NavLink({ to, children }: { to: string; children: React.ReactNode }) {
 			to={to}
 			className={cn(
 				"flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm transition-colors",
-				isActive
-					? "text-foreground font-medium"
-					: "text-muted-foreground hover:text-foreground",
+				isActive ? "text-foreground font-medium" : "text-muted-foreground hover:text-foreground",
 			)}
 		>
 			{children}
@@ -30,10 +28,14 @@ function Layout() {
 	const { theme, toggle } = useTheme();
 
 	return (
-		<div className="min-h-screen bg-background" style={{
-			backgroundImage: "linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px)",
-			backgroundSize: "32px 32px",
-		}}>
+		<div
+			className="min-h-screen bg-background"
+			style={{
+				backgroundImage:
+					"linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px)",
+				backgroundSize: "32px 32px",
+			}}
+		>
 			<header className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm border-b">
 				<div className="mx-auto max-w-5xl flex items-center justify-between px-6 h-14">
 					<Link to="/" className="text-sm font-semibold tracking-tight">

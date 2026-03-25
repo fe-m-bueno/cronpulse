@@ -1,7 +1,7 @@
-import { StatusBadge } from "./StatusBadge";
-import { TimeAgo } from "./TimeAgo";
 import type { Run } from "@/lib/api";
 import { cn, formatDuration } from "@/lib/utils";
+import { StatusBadge } from "./StatusBadge";
+import { TimeAgo } from "./TimeAgo";
 
 export function RunHistory({
 	runs,
@@ -42,7 +42,12 @@ export function RunHistory({
 						<TimeAgo date={run.startedAt} />
 						<span className="tabular-nums">{formatDuration(run.durationMs)}</span>
 						{run.exitCode !== null && (
-							<span className={cn("tabular-nums", run.exitCode === 0 ? "text-emerald-600" : "text-red-500")}>
+							<span
+								className={cn(
+									"tabular-nums",
+									run.exitCode === 0 ? "text-emerald-600" : "text-red-500",
+								)}
+							>
 								{run.exitCode}
 							</span>
 						)}

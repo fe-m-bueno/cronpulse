@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { JobCard } from "@/components/JobCard";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { JobCard } from "@/components/JobCard";
 import { useJobs } from "@/hooks/useJobs";
-import { api, type Job, type SystemInfo } from "@/lib/api";
-import { Grid3x3, List, RefreshCw } from "lucide-react";
+import { type Job, type SystemInfo, api } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { Grid3x3, List, RefreshCw } from "lucide-react";
+import { useEffect, useState } from "react";
 
 function StatusSummary({ jobs }: { jobs: Job[] }) {
 	const counts = { succeeded: 0, failed: 0, running: 0, idle: 0, overdue: 0 };
@@ -31,7 +31,10 @@ function StatusSummary({ jobs }: { jobs: Job[] }) {
 	);
 }
 
-function ViewToggle({ view, onChange }: { view: "grid" | "list"; onChange: (v: "grid" | "list") => void }) {
+function ViewToggle({
+	view,
+	onChange,
+}: { view: "grid" | "list"; onChange: (v: "grid" | "list") => void }) {
 	return (
 		<div className="flex border rounded-md overflow-hidden">
 			<Button
@@ -57,8 +60,8 @@ function ViewToggle({ view, onChange }: { view: "grid" | "list"; onChange: (v: "
 export function Dashboard() {
 	const { jobs, loading, refetch } = useJobs();
 	const [system, setSystem] = useState<SystemInfo | null>(null);
-	const [view, setView] = useState<"grid" | "list">(() =>
-		(localStorage.getItem("cronpulse:view") as "grid" | "list") || "grid",
+	const [view, setView] = useState<"grid" | "list">(
+		() => (localStorage.getItem("cronpulse:view") as "grid" | "list") || "grid",
 	);
 	const [scanning, setScanning] = useState(false);
 
@@ -111,13 +114,14 @@ export function Dashboard() {
 			{!loading && jobs.length > 0 && <StatusSummary jobs={jobs} />}
 
 			{loading ? (
-				<div className={cn(
-					view === "grid"
-						? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"
-						: "space-y-2",
-				)}>
-					{Array.from({ length: 6 }).map((_, i) => (
-						<Skeleton key={i} className="h-36 rounded-lg" />
+				<div
+					className={cn(
+						view === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3" : "space-y-2",
+					)}
+				>
+					{Array.from({ length: 6 }).map((_, idx) => (
+						// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders never reorder
+						<Skeleton key={idx} className="h-36 rounded-lg" />
 					))}
 				</div>
 			) : jobs.length === 0 ? (
@@ -129,11 +133,11 @@ export function Dashboard() {
 					</Button>
 				</div>
 			) : (
-				<div className={cn(
-					view === "grid"
-						? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"
-						: "space-y-2",
-				)}>
+				<div
+					className={cn(
+						view === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3" : "space-y-2",
+					)}
+				>
 					{jobs.map((job) => (
 						<JobCard key={job.id} job={job} onRunTriggered={refetch} />
 					))}

@@ -4,12 +4,10 @@ import { getAllJobs, getJobById } from "../../db/jobs.js";
 
 const jobs = new Hono();
 
-
 jobs.get("/", (c) => {
 	const allJobs = getAllJobs();
 	return c.json(allJobs);
 });
-
 
 jobs.get("/:id", (c) => {
 	const job = getJobById(c.req.param("id"));
@@ -18,7 +16,6 @@ jobs.get("/:id", (c) => {
 	}
 	return c.json(job);
 });
-
 
 jobs.post("/:id/run", (c) => {
 	const job = getJobById(c.req.param("id"));

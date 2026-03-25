@@ -1,7 +1,7 @@
-import Database from "better-sqlite3";
 import { existsSync, mkdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import Database from "better-sqlite3";
 
 let db: Database.Database | null = null;
 
