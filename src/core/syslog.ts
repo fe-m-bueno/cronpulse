@@ -8,8 +8,10 @@ export interface CronLogEntry {
 	timestamp: Date;
 	user: string;
 	command: string;
-	/** On Windows, this holds the task name from Event Log (used for matching instead of command) */
+	/** On Windows, this holds the task name from schtasks (used for matching instead of command) */
 	taskName?: string;
+	/** Exit code from the task scheduler (Windows only) */
+	exitCode?: number;
 }
 
 export async function getRecentCronRuns(sinceMinutesAgo: number): Promise<CronLogEntry[]> {
@@ -103,35 +105,47 @@ async function parseSyslog(sinceMinutesAgo: number): Promise<CronLogEntry[]> {
 }
 
 async function getWindowsRecentRuns(sinceMinutesAgo: number): Promise<CronLogEntry[]> {
+	// Use Get-ScheduledTaskInfo which reads from the Task Scheduler API directly,
+	// not the Event Log (which is often disabled on Windows).
 	try {
-		const { stdout } = await execFileAsync(
-			"powershell",
-			[
-				"-NoProfile",
-				"-Command",
-				`[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; Get-WinEvent -FilterHashtable @{LogName='Microsoft-Windows-TaskScheduler/Operational'; Id=102; StartTime=(Get-Date).AddMinutes(-${sinceMinutesAgo})} -ErrorAction SilentlyContinue | Select-Object TimeCreated, Message | ConvertTo-Json`,
-			],
-			{ timeout: 10000, windowsHide: true },
-		);
+		const psCommand = [
+			"[Console]::OutputEncoding = [System.Text.Encoding]::UTF8",
+			`$cutoff = (Get-Date).AddMinutes(-${sinceMinutesAgo})`,
+			"Get-ScheduledTask | Where-Object {",
+			"  $_.TaskPath -notlike '\\\\Microsoft\\\\*' -and $_.State -ne 'Disabled'",
+			"} | ForEach-Object {",
+			"  $info = $_ | Get-ScheduledTaskInfo -ErrorAction SilentlyContinue",
+			"  if ($info -and $info.LastRunTime -and $info.LastRunTime -gt $cutoff) {",
+			"    [PSCustomObject]@{",
+			"      TaskName = $_.TaskPath + $_.TaskName",
+			"      LastRunTime = $info.LastRunTime.ToString('o')",
+			"      LastResult = $info.LastTaskResult",
+			"    }",
+			"  }",
+			"} | ConvertTo-Json",
+		].join("; ");
+
+		const { stdout } = await execFileAsync("powershell", ["-NoProfile", "-Command", psCommand], {
+			timeout: 30000,
+			windowsHide: true,
+		});
 
 		if (!stdout.trim()) return [];
 
-		const events = JSON.parse(stdout);
-		const items = Array.isArray(events) ? events : [events];
-		const cutoff = new Date(Date.now() - sinceMinutesAgo * 60_000);
+		const parsed = JSON.parse(stdout);
+		const items: { TaskName: string; LastRunTime: string; LastResult: number }[] = Array.isArray(
+			parsed,
+		)
+			? parsed
+			: [parsed];
 
-		return items
-			.map((e: { TimeCreated: string; Message: string }) => {
-				const taskMatch = e.Message?.match(/Task .+?"(.+?)"/);
-				const taskPath = taskMatch?.[1] || e.Message || "";
-				return {
-					timestamp: new Date(e.TimeCreated),
-					user: "SYSTEM",
-					command: taskPath,
-					taskName: taskPath,
-				};
-			})
-			.filter((e: CronLogEntry) => e.timestamp >= cutoff);
+		return items.map((e) => ({
+			timestamp: new Date(e.LastRunTime),
+			user: "SYSTEM",
+			command: e.TaskName,
+			taskName: e.TaskName,
+			exitCode: e.LastResult,
+		}));
 	} catch {
 		return [];
 	}

@@ -79,10 +79,11 @@ async function checkJobs(): Promise<void> {
 			if (!existing) {
 				// Create a run entry for this system execution
 				const runId = randomUUID();
+				const runStatus = log.exitCode != null && log.exitCode !== 0 ? "failed" : "succeeded";
 				db.prepare(
-					`INSERT INTO runs (id, job_id, trigger_type, status, started_at, finished_at)
-					 VALUES (?, ?, 'scheduled', 'succeeded', ?, ?)`,
-				).run(runId, job.id, logTime, logTime);
+					`INSERT INTO runs (id, job_id, trigger_type, status, exit_code, started_at, finished_at)
+					 VALUES (?, ?, 'scheduled', ?, ?, ?, ?)`,
+				).run(runId, job.id, runStatus, log.exitCode ?? null, logTime, logTime);
 			}
 		}
 
@@ -91,12 +92,14 @@ async function checkJobs(): Promise<void> {
 		if (latestLog) {
 			const logTime = latestLog.timestamp.toISOString();
 			if (!job.lastRunAt || logTime > job.lastRunAt) {
+				const newStatus =
+					latestLog.exitCode != null && latestLog.exitCode !== 0 ? "failed" : "succeeded";
 				updateJobStatus(job.id, {
-					status: "succeeded",
+					status: newStatus,
 					lastRunAt: logTime,
 				});
-				if (job.status !== "succeeded") {
-					eventBus.emit("job:status-change", { jobId: job.id, status: "succeeded" });
+				if (job.status !== newStatus) {
+					eventBus.emit("job:status-change", { jobId: job.id, status: newStatus });
 				}
 			}
 		}
