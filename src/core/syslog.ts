@@ -1,4 +1,7 @@
 import { execFile } from "node:child_process";
+import { unlinkSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { promisify } from "node:util";
 import { detectOS } from "./detector.js";
 
@@ -107,28 +110,21 @@ async function parseSyslog(sinceMinutesAgo: number): Promise<CronLogEntry[]> {
 async function getWindowsRecentRuns(sinceMinutesAgo: number): Promise<CronLogEntry[]> {
 	// Use Get-ScheduledTaskInfo which reads from the Task Scheduler API directly,
 	// not the Event Log (which is often disabled on Windows).
-	try {
-		const psCommand = [
-			"[Console]::OutputEncoding = [System.Text.Encoding]::UTF8",
-			`$cutoff = (Get-Date).AddMinutes(-${sinceMinutesAgo})`,
-			"Get-ScheduledTask | Where-Object {",
-			"  $_.TaskPath -notlike '\\\\Microsoft\\\\*' -and $_.State -ne 'Disabled'",
-			"} | ForEach-Object {",
-			"  $info = $_ | Get-ScheduledTaskInfo -ErrorAction SilentlyContinue",
-			"  if ($info -and $info.LastRunTime -and $info.LastRunTime -gt $cutoff) {",
-			"    [PSCustomObject]@{",
-			"      TaskName = $_.TaskPath + $_.TaskName",
-			"      LastRunTime = $info.LastRunTime.ToString('o')",
-			"      LastResult = $info.LastTaskResult",
-			"    }",
-			"  }",
-			"} | ConvertTo-Json",
-		].join("; ");
+	// Write a temp .ps1 file to avoid all escaping/quoting issues with -Command.
+	const psScript = `[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$cutoff = (Get-Date).AddMinutes(-${sinceMinutesAgo})
+Get-ScheduledTask | Where-Object { $_.TaskPath -notlike '\\Microsoft\\*' -and $_.State -ne 'Disabled' } | ForEach-Object { $info = $_ | Get-ScheduledTaskInfo -ErrorAction SilentlyContinue; if ($info -and $info.LastRunTime -and $info.LastRunTime -gt $cutoff) { [PSCustomObject]@{ TaskName = $_.TaskPath + $_.TaskName; LastRunTime = $info.LastRunTime.ToString('o'); LastResult = $info.LastTaskResult } } } | ConvertTo-Json
+`;
 
-		const { stdout } = await execFileAsync("powershell", ["-NoProfile", "-Command", psCommand], {
-			timeout: 30000,
-			windowsHide: true,
-		});
+	const psPath = join(tmpdir(), "cronpulse-schtasks.ps1");
+	try {
+		writeFileSync(psPath, psScript, "utf-8");
+
+		const { stdout } = await execFileAsync(
+			"powershell",
+			["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", psPath],
+			{ timeout: 30000, windowsHide: true },
+		);
 
 		if (!stdout.trim()) return [];
 
@@ -146,8 +142,13 @@ async function getWindowsRecentRuns(sinceMinutesAgo: number): Promise<CronLogEnt
 			taskName: e.TaskName,
 			exitCode: e.LastResult,
 		}));
-	} catch {
+	} catch (err) {
+		console.error("Failed to get Windows scheduled task runs:", err);
 		return [];
+	} finally {
+		try {
+			unlinkSync(psPath);
+		} catch {}
 	}
 }
 
