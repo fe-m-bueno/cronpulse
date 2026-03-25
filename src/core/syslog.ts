@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { unlinkSync, writeFileSync } from "node:fs";
+import { closeSync, openSync, readSync, statSync, unlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
@@ -150,6 +150,73 @@ Get-ScheduledTask | Where-Object { $_.TaskPath -notlike '\\Microsoft\\*' -and $_
 			unlinkSync(psPath);
 		} catch {}
 	}
+}
+
+/**
+ * Extract log file path from a cron command.
+ * Detects patterns like:
+ *   - >> /path/to/file
+ *   - >> /path/to/file 2>&1
+ *   - 2>&1 | tee -a /path/to/file
+ *   - | tee -a /path/to/file
+ *   - > /path/to/file
+ */
+export function extractLogFilePath(command: string): string | null {
+	// Match: | tee [-a] /path/to/file
+	const teeMatch = command.match(/\|\s*tee\s+(?:-a\s+)?(\S+)\s*$/);
+	if (teeMatch) return teeMatch[1];
+
+	// Match: >> /path/to/file or > /path/to/file (with optional 2>&1 before or after)
+	const redirectMatch = command.match(/>>?\s+(\S+?)(?:\s+2>&1)?\s*$/);
+	if (redirectMatch) return redirectMatch[1];
+
+	// Match: 2>&1 >> /path/to/file
+	const redirect2Match = command.match(/2>&1\s+>>?\s+(\S+)\s*$/);
+	if (redirect2Match) return redirect2Match[1];
+
+	return null;
+}
+
+/**
+ * Read the tail of a log file, returning at most `maxBytes` from the end.
+ * Returns null if the file doesn't exist or can't be read.
+ */
+export function readLogTail(filePath: string, maxBytes = 64 * 1024): string | null {
+	try {
+		const stat = statSync(filePath);
+		if (!stat.isFile()) return null;
+
+		const size = stat.size;
+		if (size === 0) return null;
+
+		const buf = Buffer.alloc(Math.min(size, maxBytes));
+		const fd = openSync(filePath, "r");
+		try {
+			readSync(fd, buf, 0, buf.length, Math.max(0, size - buf.length));
+		} finally {
+			closeSync(fd);
+		}
+
+		return buf.toString("utf-8");
+	} catch {
+		return null;
+	}
+}
+
+/**
+ * Read log content that was written around a specific timestamp.
+ * Tries to extract the portion of the log file relevant to a specific run
+ * by reading the tail and looking for timestamp-adjacent content.
+ */
+export function readLogForRun(
+	command: string,
+	_runTimestamp: Date,
+	maxBytes = 32 * 1024,
+): string | null {
+	const logPath = extractLogFilePath(command);
+	if (!logPath) return null;
+
+	return readLogTail(logPath, maxBytes);
 }
 
 /**

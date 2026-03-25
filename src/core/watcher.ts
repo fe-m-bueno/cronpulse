@@ -5,7 +5,7 @@ import type { Job } from "../types/index.js";
 import { eventBus } from "./events.js";
 import { getNextRunTime } from "./parser.js";
 import { scanCrontabIfChanged } from "./scanner.js";
-import { commandMatchesCronLog, getRecentCronRuns } from "./syslog.js";
+import { commandMatchesCronLog, getRecentCronRuns, readLogForRun } from "./syslog.js";
 import type { CronLogEntry } from "./syslog.js";
 
 let scanInterval: ReturnType<typeof setInterval> | null = null;
@@ -80,10 +80,27 @@ async function checkJobs(): Promise<void> {
 				// Create a run entry for this system execution
 				const runId = randomUUID();
 				const runStatus = log.exitCode != null && log.exitCode !== 0 ? "failed" : "succeeded";
+
+				// Try to read stdout from the job's log file
+				const stdout = readLogForRun(job.command, log.timestamp) ?? "";
+
 				db.prepare(
-					`INSERT INTO runs (id, job_id, trigger_type, status, exit_code, started_at, finished_at)
-					 VALUES (?, ?, 'scheduled', ?, ?, ?, ?)`,
-				).run(runId, job.id, runStatus, log.exitCode ?? null, logTime, logTime);
+					`INSERT INTO runs (id, job_id, trigger_type, status, exit_code, stdout, started_at, finished_at)
+					 VALUES (?, ?, 'scheduled', ?, ?, ?, ?, ?)`,
+				).run(runId, job.id, runStatus, log.exitCode ?? null, stdout, logTime, logTime);
+			} else {
+				// Backfill stdout for existing runs that have no output
+				const row = existing as Record<string, unknown>;
+				const existingStdout = db
+					.prepare("SELECT stdout FROM runs WHERE id = ?")
+					.get(row.id) as { stdout: string | null } | undefined;
+
+				if (!existingStdout?.stdout) {
+					const stdout = readLogForRun(job.command, log.timestamp);
+					if (stdout) {
+						db.prepare("UPDATE runs SET stdout = ? WHERE id = ?").run(stdout, row.id);
+					}
+				}
 			}
 		}
 
