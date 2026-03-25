@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { getAllJobs, updateJobStatus } from "../db/jobs.js";
 import { getDb } from "../db/index.js";
 import { eventBus } from "./events.js";
@@ -10,6 +11,9 @@ let scanInterval: ReturnType<typeof setInterval> | null = null;
 let statusInterval: ReturnType<typeof setInterval> | null = null;
 
 export function startWatcher(): void {
+	// Run an immediate check on startup
+	checkJobs().catch((err) => console.error("Watcher initial check error:", err));
+
 	scanInterval = setInterval(() => {
 		try {
 			scanCrontabIfChanged();
@@ -20,7 +24,7 @@ export function startWatcher(): void {
 
 	statusInterval = setInterval(async () => {
 		try {
-			await checkOverdueJobs();
+			await checkJobs();
 		} catch (err) {
 			console.error("Watcher status check error:", err);
 		}
@@ -38,57 +42,91 @@ export function stopWatcher(): void {
 	}
 }
 
-async function checkOverdueJobs(): Promise<void> {
+async function checkJobs(): Promise<void> {
 	const jobs = getAllJobs();
 	const now = Date.now();
 	const db = getDb();
 
-	const cronLogs = await getRecentCronRuns(120);
+	const cronLogs = await getRecentCronRuns(1440);
 
 	for (const job of jobs) {
-		if (!job.enabled || job.status === "running" || !job.nextRunAt) continue;
+		if (!job.enabled || job.status === "running") continue;
 
-		const nextRun = new Date(job.nextRunAt).getTime();
-		const isPastDue = now > nextRun;
-		const isOverdue = job.status === "overdue";
+		// Find ALL matching system log entries for this job
+		const matchingLogs = cronLogs
+			.filter((log) => commandMatchesCronLog(job.command, log.command))
+			.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
 
-		// Skip jobs whose next run is still in the future (unless already overdue)
-		if (!isPastDue && !isOverdue) continue;
+		// Record any system runs we haven't seen yet
+		for (const log of matchingLogs) {
+			const logTime = log.timestamp.toISOString();
 
-		// Check 1: did CronPulse record a run? (manual "Run Now")
-		const cronpulseRun = db
-			.prepare(
-				"SELECT started_at FROM runs WHERE job_id = ? AND started_at >= ? LIMIT 1",
-			)
-			.get(job.id, new Date(nextRun - 60_000).toISOString()) as { started_at: string } | undefined;
+			// Check if we already have a run recorded around this time (±2 min)
+			const existing = db
+				.prepare(
+					`SELECT id FROM runs WHERE job_id = ?
+					 AND started_at BETWEEN ? AND ?
+					 LIMIT 1`,
+				)
+				.get(
+					job.id,
+					new Date(log.timestamp.getTime() - 120_000).toISOString(),
+					new Date(log.timestamp.getTime() + 120_000).toISOString(),
+				);
 
-		// Check 2: did the system cron daemon run it? (journalctl/syslog)
-		// Compare against the previous expected run, not the next one
-		// (nextRunAt may already have been advanced by a prior check)
-		const systemRan = cronLogs.some((log) =>
-			commandMatchesCronLog(job.command, log.command),
-		);
-
-		const nextNextRun = getNextRunTime(job.scheduleExpression);
-		const updates: { status?: Job["status"]; nextRunAt?: string } = {};
-
-		if (cronpulseRun || systemRan) {
-			// It ran — mark succeeded if currently idle/overdue
-			if (job.status === "overdue" || job.status === "idle") {
-				updates.status = "succeeded";
+			if (!existing) {
+				// Create a run entry for this system execution
+				const runId = randomUUID();
+				db.prepare(
+					`INSERT INTO runs (id, job_id, trigger_type, status, started_at, finished_at)
+					 VALUES (?, ?, 'scheduled', 'succeeded', ?, ?)`,
+				).run(runId, job.id, logTime, logTime);
 			}
-		} else if (job.status !== "overdue") {
-			updates.status = "overdue";
 		}
 
-		if (nextNextRun) {
-			updates.nextRunAt = nextNextRun.toISOString();
+		// Update lastRunAt from the most recent log
+		const latestLog = matchingLogs[matchingLogs.length - 1];
+		if (latestLog) {
+			const logTime = latestLog.timestamp.toISOString();
+			if (!job.lastRunAt || logTime > job.lastRunAt) {
+				updateJobStatus(job.id, {
+					status: "succeeded",
+					lastRunAt: logTime,
+				});
+				if (job.status !== "succeeded") {
+					eventBus.emit("job:status-change", { jobId: job.id, status: "succeeded" });
+				}
+			}
 		}
 
-		if (Object.keys(updates).length > 0) {
-			updateJobStatus(job.id, updates);
-			if (updates.status) {
-				eventBus.emit("job:status-change", { jobId: job.id, status: updates.status });
+		// Handle overdue detection (only for periodic jobs, not @reboot)
+		const isReboot = job.scheduleExpression.startsWith("@reboot");
+		if (!isReboot && job.nextRunAt) {
+			const nextRun = new Date(job.nextRunAt).getTime();
+			const isPastDue = now > nextRun;
+
+			if (isPastDue) {
+				// Check if it ran since the expected time
+				const ranSinceExpected = matchingLogs.some(
+					(log) => log.timestamp.getTime() >= nextRun - 60_000,
+				);
+
+				const cronpulseRun = db
+					.prepare(
+						"SELECT id FROM runs WHERE job_id = ? AND started_at >= ? LIMIT 1",
+					)
+					.get(job.id, new Date(nextRun - 60_000).toISOString());
+
+				if (!ranSinceExpected && !cronpulseRun && job.status !== "overdue") {
+					updateJobStatus(job.id, { status: "overdue" });
+					eventBus.emit("job:status-change", { jobId: job.id, status: "overdue" });
+				}
+			}
+
+			// Advance nextRunAt
+			const nextNextRun = getNextRunTime(job.scheduleExpression);
+			if (nextNextRun) {
+				updateJobStatus(job.id, { nextRunAt: nextNextRun.toISOString() });
 			}
 		}
 	}
