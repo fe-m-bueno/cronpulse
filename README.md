@@ -1,186 +1,186 @@
 # CronPulse
 
-Um dashboard de monitoramento de cron jobs local-first. Um único binário / comando `npx` que inicia um servidor web local em `localhost:7575`. Zero configuração, sem internet, sem contas, sem telemetria.
+A local-first cron job monitoring dashboard. A single binary / `npx` command that starts a local web server at `localhost:7575`. Zero configuration, no internet, no accounts, no telemetry.
 
-## Sobre o CronPulse
+## About CronPulse
 
-CronPulse detecta automaticamente todos os cron jobs (no Linux e macOS) e scheduled tasks (no Windows), exibindo um dashboard limpo e moderno para monitorar:
+CronPulse automatically detects every cron job (on Linux and macOS) and scheduled task (on Windows), and presents a clean, modern dashboard for monitoring:
 
-- Status de execução em tempo real
-- Histórico de execuções com duração e exit codes
-- Logs de stdout/stderr com live streaming
-- Agendamentos em formato legível
-- Próxima execução com contagem regressiva
-- Execução manual de jobs ("Run Now")
+- Real-time execution status
+- Run history with duration and exit codes
+- stdout/stderr logs with live streaming
+- Schedules in human-readable form
+- Next run with a countdown
+- Manual job execution ("Run Now")
 
-### Características Principais
+### Key Characteristics
 
-- **Detecção Automática** — Lê `crontab -l` (Linux/macOS) ou `schtasks` (Windows)
-- **Zero Config** — Rode o comando, abra o navegador, pronto
-- **Local e Privado** — Sem telemetria, sem contas, sem internet necessária
-- **Tempo Real** — Status atualizado em tempo real via Server-Sent Events (SSE)
-- **Multiplataforma** — Linux, macOS e Windows com o mesmo codebase
-- **Persistência** — SQLite para histórico e logs
-- **Docker** — Suporte completo com auto-restart
-- **Instalação como Serviço** — Systemd (Linux), launchd (macOS), Task Scheduler (Windows)
+- **Automatic detection** — Reads `crontab -l` (Linux/macOS) or `schtasks` (Windows)
+- **Zero config** — Run the command, open the browser, done
+- **Local and private** — No telemetry, no accounts, no internet required
+- **Real time** — Status updated live via Server-Sent Events (SSE)
+- **Cross-platform** — Linux, macOS, and Windows from the same codebase
+- **Persistence** — SQLite for history and logs
+- **Docker** — Full support with auto-restart
+- **Install as a service** — systemd (Linux), launchd (macOS), Task Scheduler (Windows)
 
 ## Preview
 
-[Imagens do dashboard virão aqui — grid de job cards, detalhes de job, visualizador de logs]
+[Dashboard images go here — job card grid, job details, log viewer]
 
-## Requisitos
+## Requirements
 
-- **Node.js** 20.0.0 ou superior
-- **pnpm** 8.0.0 ou superior (gerenciador de pacotes)
-- Sistema operacional: **Linux**, **macOS** ou **Windows**
+- **Node.js** 20.0.0 or later
+- **pnpm** 8.0.0 or later (package manager)
+- Operating system: **Linux**, **macOS**, or **Windows**
 
-### Instalação do Node.js e pnpm
+### Installing Node.js and pnpm
 
-**Linux e macOS:**
+**Linux and macOS:**
 ```bash
-# Instalar Node.js (via nvm recomendado)
+# Install Node.js (via nvm, recommended)
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
 nvm install 20
 nvm use 20
 
-# Instalar pnpm
+# Install pnpm
 npm install -g pnpm
 ```
 
 **Windows:**
-Baixe o instalador em https://nodejs.org (versão 20+) e instale. Depois:
+Download the installer from https://nodejs.org (version 20+) and install it. Then:
 ```powershell
 npm install -g pnpm
 ```
 
-## Instalação e Build
+## Installation and Build
 
-### Opção 1: NPX (Recomendado para Uso)
+### Option 1: NPX (Recommended for Use)
 
 ```bash
 npx cronpulse
 ```
 
-O dashboard abrirá automaticamente em `http://localhost:7575`.
+The dashboard opens automatically at `http://localhost:7575`.
 
-### Opção 2: Build Local (para Desenvolvimento)
+### Option 2: Local Build (for Development)
 
 ```bash
-# Clone ou acesse o repositório
+# Clone or open the repository
 cd cronpulse
 
-# Instale as dependências
+# Install the dependencies
 pnpm install
 
 # Build
 pnpm build
 
-# Inicie
+# Start
 pnpm start
 ```
 
-### Opção 3: Docker
+### Option 3: Docker
 
 ```bash
 docker compose up -d
 ```
 
-Acesse `http://localhost:7575`.
+Open `http://localhost:7575`.
 
-## Como Usar
+## How to Use
 
-### Linha de Comando (CLI)
+### Command Line (CLI)
 
-#### Iniciar o Dashboard
+#### Starting the Dashboard
 
 ```bash
-# Porto padrão (7575)
+# Default port (7575)
 cronpulse
 
-# Porto customizado
+# Custom port
 cronpulse --port 3000
 
-# Com logs verbose
+# With verbose logs
 cronpulse --verbose
 
-# Não abrir navegador automaticamente
+# Don't open the browser automatically
 cronpulse --no-open
 ```
 
-#### Listar Cron Jobs
+#### Listing Cron Jobs
 
 ```bash
 cronpulse list
 ```
 
-Exibe uma tabela com todos os jobs detectados, status e próxima execução.
+Prints a table with every detected job, its status, and its next run.
 
-#### Executar um Job Manualmente
+#### Running a Job Manually
 
 ```bash
 cronpulse run "job-name"
 ```
 
-Executa um job específico pelo nome ou ID, mostrando logs em tempo real no terminal.
+Runs a specific job by name or ID, showing live logs in the terminal.
 
-### Interface Web
+### Web Interface
 
-Acesse `http://localhost:7575` no seu navegador.
+Open `http://localhost:7575` in your browser.
 
-#### Dashboard Principal
+#### Main Dashboard
 
-- **Grid de Jobs** — Cada card mostra nome, agendamento, status, próxima execução, última execução
-- **Botão [Run Now]** — Executa o job manualmente
-- **Toggle de Visualização** — Mude entre grid e lista
-- **Botão [Scan]** — Força uma nova detecção de jobs
-- **Resumo de Status** — Conta de jobs por status (running, succeeded, failed, overdue, idle)
+- **Job grid** — Each card shows the name, schedule, status, next run, and last run
+- **[Run Now] button** — Runs the job manually
+- **View toggle** — Switch between grid and list
+- **[Scan] button** — Forces a fresh job detection
+- **Status summary** — A count of jobs by status (running, succeeded, failed, overdue, idle)
 
-#### Detalhe de Job
+#### Job Detail
 
-Clique em um job card para ver:
+Click a job card to see:
 
-- Comando completo em um bloco de código
-- Agendamento (expressão cron e formato legível)
-- Status detalhado
-- Histórico de execuções (tabela com timestamp, duração, exit code, trigger)
+- The full command in a code block
+- The schedule (cron expression and human-readable form)
+- Detailed status
+- Run history (a table with timestamp, duration, exit code, and trigger)
 
-#### Visualizador de Logs
+#### Log Viewer
 
-Clique em uma execução no histórico para ver:
+Click a run in the history to see:
 
-- Saída stdout (branco)
-- Saída stderr (vermelho)
-- Auto-scroll com toggle para fixar no final
-- Se o job estiver rodando: streaming em tempo real
-- Botão para copiar logs completos
-- Busca/filtro nos logs
+- stdout output (white)
+- stderr output (red)
+- Auto-scroll with a toggle to pin to the bottom
+- Live streaming if the job is running
+- A button to copy the full logs
+- Search/filter within the logs
 
-#### Configurações
+#### Settings
 
-Página `/settings` para ajustar:
+The `/settings` page lets you adjust:
 
-- Caminho da fonte de crontab (auto-detectado, pode ser alterado)
-- Intervalo de refresh
-- Retenção máxima de logs (padrão: 50 execuções por job)
-- Porta do servidor
+- The crontab source path (auto-detected, and changeable)
+- The refresh interval
+- Maximum log retention (default: 50 runs per job)
+- The server port
 
-## Configuração como Serviço Permanente
+## Setting Up as a Permanent Service
 
 ### Linux (systemd)
 
-Para rodar CronPulse automaticamente em background, use um user service.
+To run CronPulse automatically in the background, use a user service.
 
-#### 1. Build o Projeto
+#### 1. Build the Project
 
 ```bash
-cd /caminho/para/cronpulse
+cd /path/to/cronpulse
 pnpm install
 pnpm build
 ```
 
-#### 2. Crie o Arquivo de Serviço
+#### 2. Create the Service File
 
-Crie `~/.config/systemd/user/cronpulse.service`:
+Create `~/.config/systemd/user/cronpulse.service`:
 
 ```ini
 [Unit]
@@ -189,8 +189,8 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/node /caminho/para/cronpulse/dist/cli.js --no-open
-WorkingDirectory=/caminho/para/cronpulse
+ExecStart=/usr/bin/node /path/to/cronpulse/dist/cli.js --no-open
+WorkingDirectory=/path/to/cronpulse
 Restart=always
 RestartSec=3
 Environment=NODE_ENV=production
@@ -200,79 +200,79 @@ Environment=CRONPULSE_PORT=7575
 WantedBy=default.target
 ```
 
-**Substitua `/caminho/para/cronpulse` pelo path absoluto do seu repositório.**
+**Replace `/path/to/cronpulse` with the absolute path of your repository.**
 
-Se estiver usando nvm, descubra o path do node:
+If you use nvm, find the node path:
 ```bash
 which node
-# /home/seu-usuario/.nvm/versions/node/v20.x.x/bin/node
+# /home/your-user/.nvm/versions/node/v20.x.x/bin/node
 ```
 
-Use esse path na linha `ExecStart`.
+Use that path on the `ExecStart` line.
 
-#### 3. Ative e Inicie o Serviço
+#### 3. Enable and Start the Service
 
 ```bash
-# Recarregue o systemd
+# Reload systemd
 systemctl --user daemon-reload
 
-# Ative para iniciar automaticamente no boot
+# Enable it to start automatically at boot
 systemctl --user enable cronpulse
 
-# Inicie o serviço
+# Start the service
 systemctl --user start cronpulse
 
-# Verifique o status
+# Check the status
 systemctl --user status cronpulse
 
-# Veja os logs
+# View the logs
 journalctl --user -u cronpulse -f
 ```
 
-#### 4. Verificação
+#### 4. Verification
 
 ```bash
-# Deve retornar "active (running)"
+# Should return "active (running)"
 systemctl --user status cronpulse
 
-# Teste no navegador
+# Test in the browser
 curl http://localhost:7575/api/system
 ```
 
-#### Comandos Úteis
+#### Useful Commands
 
 ```bash
-# Reiniciar
+# Restart
 systemctl --user restart cronpulse
 
-# Parar
+# Stop
 systemctl --user stop cronpulse
 
-# Desabilitar auto-start
+# Disable auto-start
 systemctl --user disable cronpulse
 
-# Ver últimas linhas de log
+# See the last lines of the log
 journalctl --user -u cronpulse -n 50
 
-# Logs em tempo real
+# Live logs
 journalctl --user -u cronpulse -f
 ```
 
 ### macOS (launchd)
 
-macOS usa `launchd` em vez de systemd.
+macOS uses `launchd` instead of systemd.
 
-#### 1. Build o Projeto
+#### 1. Build the Project
 
 ```bash
-cd /caminho/para/cronpulse
+cd /path/to/cronpulse
 pnpm install
 pnpm build
 ```
 
-#### 2. Crie o Arquivo de Configuração
+#### 2. Create the Configuration File
 
-Crie `~/Library/LaunchAgents/com.cronpulse.plist`:
+Create `~/Library/LaunchAgents/com.cronpulse.plist`:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -285,12 +285,12 @@ Crie `~/Library/LaunchAgents/com.cronpulse.plist`:
 	<key>ProgramArguments</key>
 	<array>
 		<string>/usr/local/bin/node</string>
-		<string>/caminho/para/cronpulse/dist/cli.js</string>
+		<string>/path/to/cronpulse/dist/cli.js</string>
 		<string>--no-open</string>
 	</array>
 
 	<key>WorkingDirectory</key>
-	<string>/caminho/para/cronpulse</string>
+	<string>/path/to/cronpulse</string>
 
 	<key>RunAtLoad</key>
 	<true/>
@@ -315,183 +315,183 @@ Crie `~/Library/LaunchAgents/com.cronpulse.plist`:
 </plist>
 ```
 
-**Substitua `/caminho/para/cronpulse` pelo path absoluto do seu repositório.**
+**Replace `/path/to/cronpulse` with the absolute path of your repository.**
 
-Para encontrar o path de node:
+To find the node path:
 ```bash
 which node
 ```
 
-#### 3. Carregue o Agente
+#### 3. Load the Agent
 
 ```bash
-# Carregue o agente
+# Load the agent
 launchctl load ~/Library/LaunchAgents/com.cronpulse.plist
 
-# Verifique se está rodando
+# Check that it's running
 launchctl list | grep cronpulse
 
-# Você deve ver algo como:
-# - PID com números altos = rodando
-# - PID -1 = erro ou não carregado
+# You should see something like:
+# - a high-numbered PID = running
+# - PID -1 = error or not loaded
 ```
 
-#### 4. Verificação
+#### 4. Verification
 
 ```bash
-# Teste no navegador
+# Test in the browser
 curl http://localhost:7575/api/system
 
-# Veja os logs
+# View the logs
 tail -f /tmp/cronpulse.log
 tail -f /tmp/cronpulse.error.log
 ```
 
-#### Comandos Úteis
+#### Useful Commands
 
 ```bash
-# Descarregar (parar)
+# Unload (stop)
 launchctl unload ~/Library/LaunchAgents/com.cronpulse.plist
 
-# Recarregar
+# Reload
 launchctl unload ~/Library/LaunchAgents/com.cronpulse.plist
 launchctl load ~/Library/LaunchAgents/com.cronpulse.plist
 
-# Listar processos launchd
+# List launchd processes
 launchctl list | grep cronpulse
 
-# Remover permanentemente
+# Remove permanently
 rm ~/Library/LaunchAgents/com.cronpulse.plist
 launchctl unload ~/Library/LaunchAgents/com.cronpulse.plist
 ```
 
-### Windows (Task Scheduler ou NSSM)
+### Windows (Task Scheduler or NSSM)
 
-Windows não tem cron nativo, mas CronPulse detecta `scheduled tasks`.
+Windows has no native cron, but CronPulse detects `scheduled tasks`.
 
-#### Opção A: Task Scheduler (Nativo)
+#### Option A: Task Scheduler (Native)
 
-A forma mais simples é usar o Task Scheduler do Windows para executar CronPulse na inicialização.
+The simplest approach is to use Windows Task Scheduler to run CronPulse at startup.
 
-**1. Build o Projeto**
+**1. Build the Project**
 
 ```powershell
-cd C:\caminho\para\cronpulse
+cd C:\path\to\cronpulse
 pnpm install
 pnpm build
 ```
 
-**2. Crie uma Scheduled Task**
+**2. Create a Scheduled Task**
 
-Abra "Task Scheduler" (Windows):
+Open "Task Scheduler" (Windows):
 
-1. Menu Iniciar → "Task Scheduler"
-2. Clique em "Create Basic Task..."
-3. Nome: `CronPulse`
-4. Descrição: `CronPulse - Cron Job Monitoring Dashboard`
-5. Trigger: "At log on" (ou "At startup" se preferir)
+1. Start menu → "Task Scheduler"
+2. Click "Create Basic Task..."
+3. Name: `CronPulse`
+4. Description: `CronPulse - Cron Job Monitoring Dashboard`
+5. Trigger: "At log on" (or "At startup" if you prefer)
 6. Action: "Start a program"
-   - Program: `C:\Program Files\nodejs\node.exe` (ou o path do seu Node.js)
-   - Arguments: `C:\caminho\para\cronpulse\dist\cli.js --no-open`
-   - Start in: `C:\caminho\para\cronpulse`
-7. Clique em "Finish"
+   - Program: `C:\Program Files\nodejs\node.exe` (or your Node.js path)
+   - Arguments: `C:\path\to\cronpulse\dist\cli.js --no-open`
+   - Start in: `C:\path\to\cronpulse`
+7. Click "Finish"
 
-**3. Configuração Adicional**
+**3. Additional Configuration**
 
-Clique com botão direito na task "CronPulse" → "Properties":
+Right-click the "CronPulse" task → "Properties":
 
-- Aba "General": Marque "Run whether user is logged in or not"
-- Aba "General": Marque "Run with highest privileges" (se necessário)
-- Aba "Triggers": Clique em "New..." para adicionar mais triggers se quiser
+- "General" tab: check "Run whether user is logged in or not"
+- "General" tab: check "Run with highest privileges" (if needed)
+- "Triggers" tab: click "New..." to add more triggers if you want
 
-**4. Verificação**
+**4. Verification**
 
 ```powershell
-# Veja as tasks agendadas
+# See the scheduled tasks
 tasklist | findstr node
 
-# Teste no navegador
+# Test in the browser
 curl http://localhost:7575/api/system
 ```
 
-#### Opção B: NSSM (Recomendado para Serviço Windows)
+#### Option B: NSSM (Recommended for a Windows Service)
 
-NSSM (Non-Sucking Service Manager) é mais robusto para rodar Node.js como serviço Windows.
+NSSM (Non-Sucking Service Manager) is more robust for running Node.js as a Windows service.
 
-**1. Baixe e Configure o NSSM**
+**1. Download and Set Up NSSM**
 
 ```powershell
-# Baixe NSSM de https://nssm.cc/download
-# Extraia para C:\Program Files\nssm
+# Download NSSM from https://nssm.cc/download
+# Extract it to C:\Program Files\nssm
 
-# Abra PowerShell como Administrador
+# Open PowerShell as Administrator
 cd "C:\Program Files\nssm\win64"
 ```
 
-**2. Instale o Serviço**
+**2. Install the Service**
 
 ```powershell
 .\nssm.exe install cronpulse C:\Program Files\nodejs\node.exe
 ```
 
-Uma janela aparecerá. Configure:
+A window appears. Configure it:
 
-- **Path:** (já preenchido com node.exe)
-- **Startup directory:** `C:\caminho\para\cronpulse`
-- **Arguments:** `C:\caminho\para\cronpulse\dist\cli.js --no-open`
-- Aba "Details": Defina "Startup type" como "Automatic"
-- Clique "Install service"
+- **Path:** (already filled in with node.exe)
+- **Startup directory:** `C:\path\to\cronpulse`
+- **Arguments:** `C:\path\to\cronpulse\dist\cli.js --no-open`
+- "Details" tab: set "Startup type" to "Automatic"
+- Click "Install service"
 
-**3. Inicie o Serviço**
+**3. Start the Service**
 
 ```powershell
-# Inicie
+# Start
 net start cronpulse
 
-# Ou via Services.msc:
-# Abra Services → Procure por "cronpulse" → Start
+# Or via Services.msc:
+# Open Services → find "cronpulse" → Start
 ```
 
-**4. Verificação**
+**4. Verification**
 
 ```powershell
-# Verifique se está rodando
+# Check that it's running
 Get-Service -Name cronpulse
 
-# Teste no navegador
+# Test in the browser
 curl http://localhost:7575/api/system
 ```
 
-**5. Comandos Úteis**
+**5. Useful Commands**
 
 ```powershell
-# Parar o serviço
+# Stop the service
 net stop cronpulse
 
-# Reiniciar
+# Restart
 net stop cronpulse
 net start cronpulse
 
-# Remover o serviço (como admin)
+# Remove the service (as admin)
 C:\Program Files\nssm\win64\nssm.exe remove cronpulse confirm
 
-# Ver logs
+# View logs
 nssm.exe get cronpulse AppStdout
 ```
 
 ## Docker
 
-CronPulse funciona perfeitamente dentro de um container Docker com auto-restart.
+CronPulse works well inside a Docker container with auto-restart.
 
-### Docker Compose (Recomendado)
+### Docker Compose (Recommended)
 
 ```bash
 docker compose up -d
 ```
 
-Acesse `http://localhost:7575`.
+Open `http://localhost:7575`.
 
-**Parar:**
+**Stop:**
 ```bash
 docker compose down
 ```
@@ -501,7 +501,7 @@ docker compose down
 docker compose logs -f cronpulse
 ```
 
-### Arquivo docker-compose.yml
+### The docker-compose.yml File
 
 ```yaml
 services:
@@ -529,36 +529,36 @@ volumes:
   cronpulse-data:
 ```
 
-### Configuração do Docker
+### Docker Configuration
 
 #### Volumes
 
-- **`cronpulse-data`**: Armazena o banco de dados SQLite (`data.db`)
-- **`/var/spool/cron/crontabs`** (Linux): Acesso read-only aos crontabs do host
-- **`/etc/cron.d`**: Acesso read-only aos crons do sistema
-- **`/var/at/tabs`** (macOS): Acesso read-only aos crontabs do macOS
+- **`cronpulse-data`**: Stores the SQLite database (`data.db`)
+- **`/var/spool/cron/crontabs`** (Linux): Read-only access to the host's crontabs
+- **`/etc/cron.d`**: Read-only access to the system crons
+- **`/var/at/tabs`** (macOS): Read-only access to macOS crontabs
 
-#### Variáveis de Ambiente
+#### Environment Variables
 
 ```bash
-# Arquivo .env
+# .env file
 CRONPULSE_PORT=7575
 CRONPULSE_LOG_RETENTION=50
 ```
 
-#### Detecção de Docker
+#### Docker Detection
 
-CronPulse detecta automaticamente que está rodando em Docker (checando `/.dockerenv`). Quando em Docker:
+CronPulse automatically detects that it is running in Docker (by checking `/.dockerenv`). When in Docker, it:
 
-- Lê crontabs do host de `/host-crontabs/` (volumes bind-mount)
-- Executa "Run Now" dentro do container (não no host)
-- Ambiente `CRONPULSE_DOCKER=true` força o modo Docker
+- Reads the host's crontabs from `/host-crontabs/` (bind-mounted volumes)
+- Runs "Run Now" inside the container (not on the host)
+- Treats `CRONPULSE_DOCKER=true` as forcing Docker mode
 
 #### Healthcheck
 
-O docker-compose inclui um healthcheck que testa `GET /api/system` a cada 30 segundos. Se falhar 3 vezes, o container é reiniciado.
+The docker-compose file includes a healthcheck that tests `GET /api/system` every 30 seconds. If it fails 3 times, the container is restarted.
 
-### Docker: Build Manual
+### Docker: Manual Build
 
 ```bash
 docker build -t cronpulse:latest .
@@ -574,9 +574,9 @@ docker run -d \
   cronpulse:latest
 ```
 
-## Referência de API
+## API Reference
 
-CronPulse expõe uma API REST via Hono para integração com outros sistemas.
+CronPulse exposes a REST API via Hono for integration with other systems.
 
 ### Base URL
 
@@ -584,15 +584,15 @@ CronPulse expõe uma API REST via Hono para integração com outros sistemas.
 http://localhost:7575/api
 ```
 
-### Autenticação
+### Authentication
 
-Nenhuma autenticação necessária (local-only).
+No authentication required (local-only).
 
 ### Jobs
 
 #### GET /jobs
 
-Lista todos os jobs detectados com status atual.
+Lists every detected job with its current status.
 
 **Response:**
 ```json
@@ -615,16 +615,16 @@ Lista todos os jobs detectados com status atual.
 ]
 ```
 
-**Status valores:**
-- `idle` — Agendado, próxima execução no futuro
-- `running` — Executando neste momento
-- `succeeded` — Última execução completou com exit code 0
-- `failed` — Última execução completou com exit code != 0
-- `overdue` — Próxima execução já passou, mas nenhuma execução foi registrada
+**Status values:**
+- `idle` — Scheduled, next run in the future
+- `running` — Executing right now
+- `succeeded` — Last run completed with exit code 0
+- `failed` — Last run completed with a non-zero exit code
+- `overdue` — The next run time has passed but no run was recorded
 
 #### GET /jobs/:id
 
-Obtém detalhes de um job específico.
+Gets the details of a specific job.
 
 **Response:**
 ```json
@@ -647,10 +647,10 @@ Obtém detalhes de um job específico.
 
 #### POST /jobs/:id/run
 
-Executa um job manualmente.
+Runs a job manually.
 
 **Query Parameters:**
-- `skipSleep` (boolean, opcional) — Se true, remove `sleep` inicial do comando
+- `skipSleep` (boolean, optional) — If true, strips a leading `sleep` from the command
 
 **Response:**
 ```json
@@ -659,11 +659,11 @@ Executa um job manualmente.
 }
 ```
 
-Status HTTP: 202 Accepted
+HTTP status: 202 Accepted
 
 #### POST /jobs/:id/stop
 
-Para uma execução em progresso de um job.
+Stops a job's run that is in progress.
 
 **Response:**
 ```json
@@ -672,15 +672,15 @@ Para uma execução em progresso de um job.
 }
 ```
 
-### Execuções (Runs)
+### Runs
 
 #### GET /jobs/:id/runs
 
-Lista histórico de execuções de um job.
+Lists a job's run history.
 
 **Query Parameters:**
-- `limit` (number, default 20) — Quantas execuções retornar
-- `offset` (number, default 0) — Paginação
+- `limit` (number, default 20) — How many runs to return
+- `offset` (number, default 0) — Pagination
 
 **Response:**
 ```json
@@ -702,7 +702,7 @@ Lista histórico de execuções de um job.
 
 #### GET /jobs/:id/runs/:runId
 
-Obtém detalhes completos de uma execução com logs.
+Gets the full details of a run, with logs.
 
 **Response:**
 ```json
@@ -722,7 +722,7 @@ Obtém detalhes completos de uma execução com logs.
 
 #### GET /jobs/:id/runs/:runId/stream
 
-Server-Sent Events stream de logs em tempo real enquanto o job está rodando.
+A Server-Sent Events stream of live logs while the job is running.
 
 **Response (SSE):**
 ```
@@ -739,11 +739,11 @@ event: complete
 data: {"exitCode":0,"status":"succeeded"}
 ```
 
-### Sistema
+### System
 
 #### GET /system
 
-Informações do sistema e CronPulse.
+System and CronPulse information.
 
 **Response:**
 ```json
@@ -757,17 +757,17 @@ Informações do sistema e CronPulse.
 }
 ```
 
-**Campos:**
-- `os` — "linux", "darwin" (macOS), ou "win32"
-- `uptime` — Segundos desde boot do sistema
-- `crontabPath` — Caminho ou comando usado para ler crontabs
-- `jobCount` — Número de jobs detectados
-- `version` — Versão do CronPulse
-- `isDocker` — Se está rodando em Docker
+**Fields:**
+- `os` — "linux", "darwin" (macOS), or "win32"
+- `uptime` — Seconds since the system booted
+- `crontabPath` — The path or command used to read crontabs
+- `jobCount` — Number of detected jobs
+- `version` — The CronPulse version
+- `isDocker` — Whether it is running in Docker
 
 #### POST /scan
 
-Força uma rescans de crontabs/scheduled tasks.
+Forces a rescan of crontabs/scheduled tasks.
 
 **Response:**
 ```json
@@ -777,11 +777,11 @@ Força uma rescans de crontabs/scheduled tasks.
 }
 ```
 
-### Eventos
+### Events
 
 #### GET /events
 
-Server-Sent Events stream de eventos globais (status changes, etc).
+A Server-Sent Events stream of global events (status changes, and so on).
 
 **Response (SSE):**
 ```
@@ -795,21 +795,21 @@ event: jobs:updated
 data: {"jobCount":5}
 ```
 
-**Tipos de eventos:**
-- `job:status-change` — Status de um job mudou
-- `jobs:updated` — Número de jobs mudou (após scan)
+**Event types:**
+- `job:status-change` — A job's status changed
+- `jobs:updated` — The number of jobs changed (after a scan)
 
-## Arquitetura
+## Architecture
 
-CronPulse funciona em camadas bem definidas:
+CronPulse works in well-defined layers:
 
-### Diagrama de Arquitetura
+### Architecture Diagram
 
 ```
-Terminal / Navegador
+Terminal / Browser
         │
         ▼
-    CLI (Node.js) ─── ou ─── SPA (React)
+    CLI (Node.js) ─── or ─── SPA (React)
         │                        │
         ▼                        ▼
     ┌─────────────────────┐
@@ -886,123 +886,123 @@ Terminal / Navegador
     ~/.cronpulse/data.db
 ```
 
-### Componentes
+### Components
 
 #### Detector (`src/core/detector.ts`)
 
-Detecta o SO e lê cron jobs:
+Detects the OS and reads cron jobs:
 
 - `detectOS()` → "linux" | "darwin" | "win32"
 - `isDocker()` → boolean
-- `readCrontab()` → Array de RawCronEntry
-  - Linux/macOS: executa `crontab -l`, lê `/etc/cron.d/`
-  - Windows: executa `schtasks /Query`
-  - Docker: lê arquivos em `/host-crontabs/`
-- `parseCrontabOutput()` → extrai schedule, command, name de linhas crontab
+- `readCrontab()` → an array of RawCronEntry
+  - Linux/macOS: runs `crontab -l`, reads `/etc/cron.d/`
+  - Windows: runs `schtasks /Query`
+  - Docker: reads files in `/host-crontabs/`
+- `parseCrontabOutput()` → extracts schedule, command, and name from crontab lines
 
 #### Parser (`src/core/parser.ts`)
 
-Processa expressões cron:
+Processes cron expressions:
 
 - `getNextRunTime(expression)` → Date | null
-- `toHumanReadable(expression)` → string (ex: "Every day at 3:00 AM")
-- `generateJobId(schedule, command)` → string (hash SHA256 truncado)
+- `toHumanReadable(expression)` → string (for example, "Every day at 3:00 AM")
+- `generateJobId(schedule, command)` → string (a truncated SHA256 hash)
 
-Usa a biblioteca `cron-parser` para calcular próximas execuções.
+Uses the `cron-parser` library to compute upcoming runs.
 
 #### Executor (`src/core/executor.ts`)
 
-Executa jobs como child processes:
+Runs jobs as child processes:
 
 - `executeJob(job, trigger, skipSleep)` → runId
-  - Spawna um processo child do comando do job
-  - Captura stdout e stderr (máximo 1MB por stream)
-  - Emite eventos de output em tempo real
-  - Registra no banco de dados
-  - Atualiza status do job (succeeded/failed baseado no exit code)
-- `stopRun(runId)` → boolean (envia SIGTERM, depois SIGKILL)
-- `stopJobRuns(jobId)` → número de processos parados
+  - Spawns a child process for the job's command
+  - Captures stdout and stderr (at most 1MB per stream)
+  - Emits output events in real time
+  - Records the run in the database
+  - Updates the job's status (succeeded/failed based on the exit code)
+- `stopRun(runId)` → boolean (sends SIGTERM, then SIGKILL)
+- `stopJobRuns(jobId)` → the number of processes stopped
 
 #### Scanner (`src/core/scanner.ts`)
 
-Detecção contínua de cron jobs:
+Continuous cron job detection:
 
-- `scanCrontab()` → Lê todos os crontabs, faz upsert no DB, remove jobs obsoletos
-- `scanCrontabIfChanged()` → Scans apenas se houver mudança (otimização)
+- `scanCrontab()` → Reads every crontab, upserts into the DB, removes stale jobs
+- `scanCrontabIfChanged()` → Scans only when something changed (an optimization)
 
 #### Watcher (`src/core/watcher.ts`)
 
-Loops em background para monitoramento:
+Background loops for monitoring:
 
-- `startWatcher()` → inicia 2 intervalos:
-  - A cada 30 segundos: `scanCrontabIfChanged()`
-  - A cada 10 segundos: `checkOverdueJobs()`
-- `checkOverdueJobs()` → verifica jobs que deveriam ter rodado:
-  - Busca logs em journalctl / syslog / Event Viewer
-  - Se encontrou execução: marca como succeeded
-  - Se passou da hora e sem execução: marca como overdue
+- `startWatcher()` → starts 2 intervals:
+  - Every 30 seconds: `scanCrontabIfChanged()`
+  - Every 10 seconds: `checkOverdueJobs()`
+- `checkOverdueJobs()` → checks jobs that should have run:
+  - Looks for logs in journalctl / syslog / Event Viewer
+  - If a run was found: marks it succeeded
+  - If the time has passed with no run: marks it overdue
 
 #### Syslog (`src/core/syslog.ts`)
 
-Leitura de logs do sistema:
+Reading system logs:
 
-- Linux: `journalctl -t CRON` ou `/var/log/syslog` via grep
-- macOS: parse do journalctl similar ao Linux
+- Linux: `journalctl -t CRON` or `/var/log/syslog` via grep
+- macOS: journalctl parsing similar to Linux
 - Windows: `Get-WinEvent -FilterHashtable @{LogName='Microsoft-Windows-TaskScheduler/Operational'; ...}`
-- `commandMatchesCronLog()` → match fuzzy entre comando do job e comando no log
+- `commandMatchesCronLog()` → fuzzy matching between the job's command and the command in the log
 
 #### Database (`src/db/`)
 
-SQLite com 3 tabelas:
+SQLite with 3 tables:
 
-- **jobs** → um por job detectado
+- **jobs** → one per detected job
   - id (hash), name, schedule_expression, schedule_human, command, source
   - status, last_run_at, last_duration_ms, next_run_at
   - enabled, created_at, updated_at
-- **runs** → histórico de execuções
+- **runs** → run history
   - id, job_id, started_at, finished_at, duration_ms, exit_code
   - stdout, stderr, trigger_type, status
-- **settings** → configurações do app
+- **settings** → app configuration
 
-Acesso via `getDb()`, operações query diretas com `db.prepare()`.
+Accessed via `getDb()`, with direct queries through `db.prepare()`.
 
-### Fluxo de Detecção de Job Overdue
+### Overdue Job Detection Flow
 
-1. CLI inicia → `scanCrontab()` detecta todos os jobs e armazena no DB
-2. Watcher inicia em background
-3. A cada 30s: verifica se houve mudanças nos crontabs
-4. A cada 10s: `checkOverdueJobs()`:
-   - Para cada job: se `now > nextRunAt`
-   - Busca: CronPulse registrou execução? (tabela runs)
-   - Busca: Sistema cron daemon executou? (journalctl/syslog/Event Viewer)
-   - Se encontrou: status = "succeeded"
-   - Se não encontrou: status = "overdue"
+1. The CLI starts → `scanCrontab()` detects every job and stores it in the DB
+2. The watcher starts in the background
+3. Every 30s: checks whether the crontabs changed
+4. Every 10s: `checkOverdueJobs()`:
+   - For each job: if `now > nextRunAt`
+   - Look: did CronPulse record a run? (the runs table)
+   - Look: did the system cron daemon run it? (journalctl/syslog/Event Viewer)
+   - If found: status = "succeeded"
+   - If not found: status = "overdue"
 
-### Fluxo de Execução Manual ("Run Now")
+### Manual Execution Flow ("Run Now")
 
-1. Frontend clica botão "Run Now"
-2. POST `/api/jobs/:id/run` retorna `runId`
+1. The frontend clicks the "Run Now" button
+2. POST `/api/jobs/:id/run` returns a `runId`
 3. `executeJob(job, "manual")`:
-   - Cria entrada em DB runs com status "running"
-   - Spawna child process do comando
-   - Inicia buffering de stdout e stderr
-   - Emite eventos `run:output` para cada chunk
-4. Child process encerra:
-   - Calcula duration e determina status (exit code 0 → succeeded, else → failed)
-   - Atualiza DB runs
-   - Atualiza DB jobs: lastRunAt, lastDurationMs, nextRunAt
-   - Emite evento `run:complete`
-   - Prune de runs antigos (keep últimas 50, configurável)
-5. Frontend recebe eventos via SSE ou polling
+   - Creates a runs entry in the DB with status "running"
+   - Spawns a child process for the command
+   - Starts buffering stdout and stderr
+   - Emits `run:output` events for each chunk
+4. The child process exits:
+   - Computes the duration and determines the status (exit code 0 → succeeded, otherwise → failed)
+   - Updates the runs table
+   - Updates the jobs table: lastRunAt, lastDurationMs, nextRunAt
+   - Emits a `run:complete` event
+   - Prunes old runs (keeping the last 50, configurable)
+5. The frontend receives events via SSE or polling
 
-## Configuração
+## Configuration
 
-### Variáveis de Ambiente
+### Environment Variables
 
-Crie um arquivo `.env` na raiz do projeto ou defina variáveis de ambiente:
+Create a `.env` file at the project root or set environment variables:
 
 ```bash
-# .env exemplo
+# example .env
 CRONPULSE_PORT=7575
 CRONPULSE_DOCKER=false
 CRONPULSE_CRONTAB_PATH=
@@ -1011,18 +1011,18 @@ CRONPULSE_LOG_RETENTION=50
 CRONPULSE_HOST_EXEC=false
 ```
 
-**Variáveis:**
+**Variables:**
 
-| Variável | Default | Descrição |
-|----------|---------|-----------|
-| `CRONPULSE_PORT` | `7575` | Porta do servidor HTTP |
-| `CRONPULSE_DOCKER` | auto-detectado | Force modo Docker (true/false) |
-| `CRONPULSE_CRONTAB_PATH` | auto-detectado | Caminho customizado para crontab (ex: `/etc/crontab`) |
-| `CRONPULSE_DATA_DIR` | `~/.cronpulse` | Diretório para SQLite e dados |
-| `CRONPULSE_LOG_RETENTION` | `50` | Quantas execuções guardar por job |
-| `CRONPULSE_HOST_EXEC` | `false` | Em Docker: permitir execução no host (requer socket) |
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `CRONPULSE_PORT` | `7575` | HTTP server port |
+| `CRONPULSE_DOCKER` | auto-detected | Force Docker mode (true/false) |
+| `CRONPULSE_CRONTAB_PATH` | auto-detected | Custom crontab path (for example, `/etc/crontab`) |
+| `CRONPULSE_DATA_DIR` | `~/.cronpulse` | Directory for SQLite and data |
+| `CRONPULSE_LOG_RETENTION` | `50` | How many runs to keep per job |
+| `CRONPULSE_HOST_EXEC` | `false` | In Docker: allow execution on the host (requires a socket) |
 
-### Arquivo .env.example
+### The .env.example File
 
 ```bash
 CRONPULSE_PORT=7575
@@ -1033,66 +1033,66 @@ CRONPULSE_LOG_RETENTION=50
 CRONPULSE_HOST_EXEC=false
 ```
 
-## Desenvolvimento
+## Development
 
 ### Setup
 
 ```bash
-# Clonar/acessar repo
+# Clone/open the repo
 cd cronpulse
 
-# Instalar dependências
+# Install the dependencies
 pnpm install
 
-# Instalar dependências do frontend
+# Install the frontend dependencies
 cd frontend && pnpm install && cd ..
 ```
 
-### Rodando em Desenvolvimento
+### Running in Development
 
 ```bash
-# Backend + Frontend com hot reload
+# Backend + frontend with hot reload
 pnpm dev
 ```
 
-Abre dois processos simultâneos:
-- Backend: TypeScript com tsx watch em localhost:7575
-- Frontend: Vite dev server em localhost:5173 (proxy para backend)
+This opens two processes at once:
+- Backend: TypeScript with tsx watch on localhost:7575
+- Frontend: Vite dev server on localhost:5173 (proxying to the backend)
 
 ### Build
 
 ```bash
-# Build backend (TypeScript → JavaScript em dist/)
+# Build the backend (TypeScript → JavaScript in dist/)
 pnpm build:backend
 
-# Build frontend (React → bundle estático em dist/frontend/)
+# Build the frontend (React → a static bundle in dist/frontend/)
 pnpm build:frontend
 
-# Ambos
+# Both
 pnpm build
 ```
 
-### Linting e Type Check
+### Linting and Type Checking
 
 ```bash
-# Lint com Biome
+# Lint with Biome
 pnpm lint
 
-# Fix automático
+# Automatic fixes
 pnpm lint:fix
 
 # Type check
 pnpm typecheck
 ```
 
-### Estrutura de Diretórios
+### Directory Structure
 
 ```
 cronpulse/
-├── .env.example           # Exemplo de variáveis
+├── .env.example           # Example variables
 ├── .gitignore
-├── README.md              # Este arquivo
-├── CLAUDE.md              # Especificação técnica completa
+├── README.md              # This file
+├── CLAUDE.md              # Full technical specification
 ├── package.json
 ├── pnpm-lock.yaml
 ├── tsconfig.json
@@ -1103,24 +1103,24 @@ cronpulse/
 ├── cronpulse.service      # Systemd unit file (Linux)
 │
 ├── src/
-│   ├── cli.ts             # Entrada CLI (commands: start, list, run)
+│   ├── cli.ts             # CLI entry point (commands: start, list, run)
 │   ├── types/
-│   │   └── index.ts       # Types compartilhados (Job, Run, etc)
-│   ├── core/              # Lógica principal
-│   │   ├── detector.ts    # Detecção de OS, leitura crontab/schtasks
-│   │   ├── parser.ts      # Parse de expressões cron
-│   │   ├── executor.ts    # Execução de jobs como child process
-│   │   ├── watcher.ts     # Loops de background para monitoramento
-│   │   ├── scanner.ts     # Scan de crontabs + upsert DB
-│   │   ├── syslog.ts      # Leitura de logs do sistema
-│   │   ├── docker.ts      # Detecção Docker e read de crontabs
-│   │   └── events.ts      # EventEmitter para pub/sub
-│   ├── db/                # Camada de dados SQLite
-│   │   ├── index.ts       # Conexão, migrations
-│   │   ├── jobs.ts        # Queries de jobs
-│   │   └── runs.ts        # Queries de execuções
-│   └── server/            # API HTTP (Hono)
-│       ├── index.ts       # Setup do servidor
+│   │   └── index.ts       # Shared types (Job, Run, etc.)
+│   ├── core/              # Core logic
+│   │   ├── detector.ts    # OS detection, reading crontab/schtasks
+│   │   ├── parser.ts      # Cron expression parsing
+│   │   ├── executor.ts    # Running jobs as child processes
+│   │   ├── watcher.ts     # Background monitoring loops
+│   │   ├── scanner.ts     # Crontab scanning + DB upsert
+│   │   ├── syslog.ts      # Reading system logs
+│   │   ├── docker.ts      # Docker detection and crontab reading
+│   │   └── events.ts      # EventEmitter for pub/sub
+│   ├── db/                # SQLite data layer
+│   │   ├── index.ts       # Connection, migrations
+│   │   ├── jobs.ts        # Job queries
+│   │   └── runs.ts        # Run queries
+│   └── server/            # HTTP API (Hono)
+│       ├── index.ts       # Server setup
 │       ├── middleware/
 │       │   └── cors.ts    # CORS middleware
 │       └── routes/
@@ -1136,27 +1136,27 @@ cronpulse/
 │   ├── components.json    # shadcn/ui config
 │   ├── index.html
 │   └── src/
-│       ├── main.tsx       # Entry point React
-│       ├── App.tsx        # Router principal
+│       ├── main.tsx       # React entry point
+│       ├── App.tsx        # Main router
 │       ├── pages/
-│       │   ├── Dashboard.tsx     # Listagem de jobs
-│       │   ├── JobDetail.tsx     # Detalhe + histórico
-│       │   └── Settings.tsx      # Configurações
+│       │   ├── Dashboard.tsx     # Job listing
+│       │   ├── JobDetail.tsx     # Detail + history
+│       │   └── Settings.tsx      # Settings
 │       ├── components/
-│       │   ├── JobCard.tsx       # Card de um job
-│       │   ├── StatusBadge.tsx   # Status badge colorido
-│       │   ├── LogViewer.tsx     # Terminal com logs
-│       │   ├── RunHistory.tsx    # Tabela de execuções
-│       │   ├── Countdown.tsx     # Contagem regressiva
-│       │   ├── TimeAgo.tsx       # "há X minutos"
+│       │   ├── JobCard.tsx       # A job's card
+│       │   ├── StatusBadge.tsx   # Colored status badge
+│       │   ├── LogViewer.tsx     # Terminal with logs
+│       │   ├── RunHistory.tsx    # Run table
+│       │   ├── Countdown.tsx     # Countdown
+│       │   ├── TimeAgo.tsx       # "X minutes ago"
 │       │   └── ui/               # shadcn/ui components
 │       ├── hooks/
 │       │   ├── useJobs.ts        # Fetch jobs + auto-refresh
-│       │   ├── useSSE.ts         # Hook para SSE
+│       │   ├── useSSE.ts         # SSE hook
 │       │   └── useTheme.ts       # Dark mode toggle
 │       ├── lib/
-│       │   ├── api.ts            # Funções de API
-│       │   └── utils.ts          # Utilitários (cn, etc)
+│       │   ├── api.ts            # API functions
+│       │   └── utils.ts          # Utilities (cn, etc.)
 │       └── styles/
 │           └── globals.css       # TailwindCSS v4 + overrides
 │
@@ -1168,363 +1168,363 @@ cronpulse/
 
 ## Troubleshooting
 
-### Porta já está em uso
+### Port Already in Use
 
-**Erro:** `listen EADDRINUSE :::7575`
+**Error:** `listen EADDRINUSE :::7575`
 
-**Solução:**
+**Fix:**
 
 Linux/macOS:
 ```bash
-# Encontre o PID usando a porta
+# Find the PID using the port
 lsof -i :7575
 
-# Mate o processo
+# Kill the process
 kill -9 <PID>
 
-# Ou use uma porta diferente
+# Or use a different port
 cronpulse --port 3000
 ```
 
 Windows:
 ```powershell
-# Encontre o PID usando a porta
+# Find the PID using the port
 netstat -ano | findstr :7575
 
-# Mate o processo
+# Kill the process
 taskkill /PID <PID> /F
 
-# Ou use uma porta diferente
+# Or use a different port
 cronpulse --port 3000
 ```
 
-### CronPulse não detecta cron jobs
+### CronPulse Doesn't Detect Cron Jobs
 
-**Problema:** Dashboard mostra "No cron jobs detected" mas você tem crons.
+**Problem:** The dashboard shows "No cron jobs detected" but you do have crons.
 
-**Causas e soluções:**
+**Causes and fixes:**
 
-1. **Crontab vazio ou sem jobs**
+1. **Empty crontab, or no jobs**
    ```bash
    crontab -l
    ```
-   Se vazio, adicione um job:
+   If it is empty, add a job:
    ```bash
    (crontab -l 2>/dev/null; echo "*/5 * * * * /path/to/script.sh") | crontab -
    ```
 
-2. **Em Docker: crontabs não estão bind-mounted**
-   Verifique `docker-compose.yml`:
+2. **In Docker: the crontabs are not bind-mounted**
+   Check `docker-compose.yml`:
    ```yaml
    volumes:
      - /var/spool/cron/crontabs:/host-crontabs:ro
    ```
 
-3. **Permissões insuficientes**
+3. **Insufficient permissions**
    ```bash
-   # Linux/macOS: tente com sudo
+   # Linux/macOS: try with sudo
    sudo cronpulse
    ```
 
-4. **Crontab em local customizado**
+4. **Crontab in a custom location**
    ```bash
-   cronpulse --no-open  # inicia
-   # Em outro terminal:
-   export CRONPULSE_CRONTAB_PATH=/caminho/customizado/crontab
+   cronpulse --no-open  # starts it
+   # In another terminal:
+   export CRONPULSE_CRONTAB_PATH=/custom/path/crontab
    ```
 
-5. **Teste a detecção**
+5. **Test the detection**
    ```bash
    cronpulse list
    ```
-   Deve mostrar jobs encontrados.
+   It should show the jobs it found.
 
-### Job sempre mostra status "overdue"
+### A Job Always Shows "overdue"
 
-**Problema:** Job tem status "overdue" mesmo que tenha rodado.
+**Problem:** A job has "overdue" status even though it ran.
 
-**Causas e soluções:**
+**Causes and fixes:**
 
-1. **Sistema cron não registra execução em syslog**
+1. **The system cron doesn't record runs in syslog**
 
-   Verifique se syslog está habilitado:
+   Check whether syslog is enabled:
    ```bash
-   # Linux: verifique se CRON está nos logs
+   # Linux: check whether CRON appears in the logs
    journalctl -t CRON | tail
-   # ou
+   # or
    grep CRON /var/log/syslog | tail
    ```
 
-   Se vazio, o daemon cron pode não estar logando. Configure syslog:
+   If it is empty, the cron daemon may not be logging. Configure syslog:
    ```bash
-   # Edite /etc/rsyslog.d/50-default.conf
-   # Descomente ou adicione:
+   # Edit /etc/rsyslog.d/50-default.conf
+   # Uncomment or add:
    # cron.*      /var/log/cron.log
    ```
 
-2. **Horário do sistema dessincronizado**
+2. **System clock out of sync**
    ```bash
-   # Verifique a hora
+   # Check the time
    date
 
-   # Sincronize com NTP
+   # Sync with NTP
    sudo timedatectl set-ntp true
    ```
 
-3. **Comando é diferente entre crontab e syslog**
+3. **The command differs between crontab and syslog**
 
-   CronPulse faz matching fuzzy do comando. Se o comando no crontab é `backup.sh` mas o syslog registra `/home/user/scripts/backup.sh`, pode não dar match.
+   CronPulse matches commands fuzzily. If the crontab command is `backup.sh` but syslog records `/home/user/scripts/backup.sh`, it may not match.
 
-4. **Force um re-scan no dashboard**
+4. **Force a re-scan in the dashboard**
 
-   Clique no botão [Scan] para forçar re-detecção.
+   Click the [Scan] button to force re-detection.
 
-### Logs de job não aparecem no log viewer
+### Job Logs Don't Appear in the Log Viewer
 
-**Problema:** Clico em "Run Now", mas os logs não aparecem.
+**Problem:** I click "Run Now" but the logs don't appear.
 
-**Causas e soluções:**
+**Causes and fixes:**
 
-1. **Frontend não está conectado ao SSE**
+1. **The frontend isn't connected to SSE**
 
-   Verifique no console do navegador (F12):
+   Check the browser console (F12):
    ```javascript
-   // Teste a conexão SSE
+   // Test the SSE connection
    const sse = new EventSource('/api/jobs/JOB_ID/runs/RUN_ID/stream');
    sse.onmessage = (e) => console.log(e.data);
    sse.onerror = (e) => console.error('SSE error', e);
    ```
 
-2. **Comando não produz output**
+2. **The command produces no output**
 
-   Teste se o comando realmente produz saída:
+   Test whether the command really produces output:
    ```bash
-   /caminho/do/comando
+   /path/to/command
    ```
 
-   Se silencioso, adicione logging:
+   If it is silent, add logging:
    ```bash
-   echo "Started job" && /caminho/do/comando && echo "Finished"
+   echo "Started job" && /path/to/command && echo "Finished"
    ```
 
-3. **CORS bloqueando requisição**
+3. **CORS blocking the request**
 
-   Verifique no console do navegador se há erro de CORS.
-   CronPulse permite CORS para localhost, mas se tiver proxy reverso, configure CORS no proxy.
+   Check the browser console for a CORS error.
+   CronPulse allows CORS for localhost, but if you have a reverse proxy, configure CORS on the proxy.
 
-4. **Buffer limite atingido**
+4. **Buffer limit reached**
 
-   Máximo 1MB de saída por stream (stdout/stderr). Se exceder, saída é truncada.
-   Verifique o tamanho:
+   At most 1MB of output per stream (stdout/stderr). Beyond that, the output is truncated.
+   Check the size:
    ```bash
-   /caminho/do/comando 2>&1 | wc -c
+   /path/to/command 2>&1 | wc -c
    ```
 
-### Job roda manualmente mas não roda agendado
+### A Job Runs Manually but Not on Schedule
 
-**Problema:** "Run Now" funciona, mas o sistema cron não roda automaticamente.
+**Problem:** "Run Now" works, but the system cron doesn't run it automatically.
 
-**Causas e soluções:**
+**Causes and fixes:**
 
-1. **Cron daemon não está rodando**
+1. **The cron daemon isn't running**
 
    Linux:
    ```bash
    sudo service cron status
-   # Se stopped:
+   # If stopped:
    sudo service cron start
    ```
 
    macOS:
    ```bash
    sudo launchctl list | grep cron
-   # Deve listar com PID
+   # It should be listed with a PID
    ```
 
-2. **Hora de execução no passado**
+2. **The run time is in the past**
 
-   Se o crontab tem `0 2 * * *` (2:00 AM) e você configurou em 15:00, nunca rodará até amanhã às 2:00 AM.
+   If the crontab says `0 2 * * *` (2:00 AM) and you set it up at 15:00, it will not run until 2:00 AM tomorrow.
 
-   Para testar, mude para poucos minutos à frente:
+   To test, change it to a few minutes ahead:
    ```bash
-   # Edite crontab para rodar em 2 minutos
+   # Edit the crontab to run in 2 minutes
    crontab -e
-   # Mude "0 2 * * *" para "$(date +%M) $(date +%H) * * *" (próximo minuto)
+   # Change "0 2 * * *" to "$(date +%M) $(date +%H) * * *" (the next minute)
 
-   # Aguarde e verifique se rodou:
+   # Wait, then check whether it ran:
    cronpulse list
    ```
 
-3. **Variáveis de ambiente não definidas**
+3. **Environment variables not set**
 
-   Cron roda com ambiente mínimo. Se seu script precisa de `$PATH` customizado:
+   Cron runs with a minimal environment. If your script needs a custom `$PATH`:
    ```bash
-   # Adicione ao crontab:
+   # Add to the crontab:
    PATH=/usr/local/bin:/usr/bin:/bin
    SHELL=/bin/bash
    0 2 * * * cd /home/user && ./backup.sh
    ```
 
-4. **Permissões do arquivo de script**
+4. **Script file permissions**
 
    ```bash
-   chmod +x /caminho/do/script.sh
+   chmod +x /path/to/script.sh
    ```
 
-5. **Syslog desabilitado ou sem permissão de leitura**
+5. **Syslog disabled or unreadable**
 
-   CronPulse tenta detectar execução via syslog/journalctl. Se desabilitado:
+   CronPulse tries to detect runs via syslog/journalctl. If that is disabled:
 
    Linux (systemd):
    ```bash
-   # Habilite journalctl para CRON
+   # Enable journalctl for CRON
    sudo journalctl -t CRON -n 10
    ```
 
-### CronPulse crash ao iniciar
+### CronPulse Crashes on Startup
 
-**Erro:** `Error: ENOENT: no such file or directory, open '/home/user/.cronpulse/data.db'`
+**Error:** `Error: ENOENT: no such file or directory, open '/home/user/.cronpulse/data.db'`
 
-**Solução:**
+**Fix:**
 
-O diretório de dados não foi criado. CronPulse deve criar automaticamente, mas se falhar:
+The data directory was not created. CronPulse should create it automatically, but if that fails:
 
 ```bash
-# Crie manualmente
+# Create it manually
 mkdir -p ~/.cronpulse
 chmod 700 ~/.cronpulse
 
-# Ou com CRONPULSE_DATA_DIR customizado:
-mkdir -p /caminho/customizado
-export CRONPULSE_DATA_DIR=/caminho/customizado
+# Or with a custom CRONPULSE_DATA_DIR:
+mkdir -p /custom/path
+export CRONPULSE_DATA_DIR=/custom/path
 cronpulse
 ```
 
-### Permissão negada ao ler crontab
+### Permission Denied Reading the Crontab
 
-**Erro:** `Error: Permission denied: running 'crontab -l'`
+**Error:** `Error: Permission denied: running 'crontab -l'`
 
-**Solução:**
+**Fix:**
 
-Em alguns sistemas, `crontab -l` requer privilégios:
+On some systems, `crontab -l` requires privileges:
 
 ```bash
-# Rode com sudo
+# Run with sudo
 sudo cronpulse
 
-# Ou configure o caminho direto se tiver permissão:
-export CRONPULSE_CRONTAB_PATH=/var/spool/cron/crontabs/seu-usuario
+# Or point at the path directly if you have permission:
+export CRONPULSE_CRONTAB_PATH=/var/spool/cron/crontabs/your-user
 cronpulse
 ```
 
-### Em Docker: jobs do host não aparecem
+### In Docker: Host Jobs Don't Appear
 
-**Problema:** Em Docker, CronPulse não vê os cron jobs do host.
+**Problem:** In Docker, CronPulse doesn't see the host's cron jobs.
 
-**Causas e soluções:**
+**Causes and fixes:**
 
-1. **Volumes não estão bind-mounted**
+1. **The volumes aren't bind-mounted**
 
-   Verifique `docker-compose.yml`:
+   Check `docker-compose.yml`:
    ```yaml
    volumes:
      - /var/spool/cron/crontabs:/host-crontabs:ro
      - /etc/cron.d:/host-cron.d:ro
    ```
 
-2. **Crontabs em local diferente**
+2. **Crontabs in a different location**
 
-   Alguns SOs guardam crontabs em `/var/at/tabs` (macOS) ou outro lugar.
+   Some operating systems keep crontabs in `/var/at/tabs` (macOS) or elsewhere.
 
-   Customize o mount:
+   Customize the mount:
    ```yaml
    volumes:
-     - /seu/local/crontab:/host-crontabs:ro
+     - /your/crontab/location:/host-crontabs:ro
    ```
 
-3. **Permissões de leitura**
+3. **Read permissions**
 
-   O container precisa permissão de leitura:
+   The container needs read permission:
    ```bash
    ls -la /var/spool/cron/crontabs/
-   # Deve ser readable pelo container
+   # It must be readable by the container
    ```
 
-### Rate limit ou comportamento anormal em produção
+### Rate Limiting or Abnormal Behavior in Production
 
-**Problema:** Muitos jobs, sistema lento ou CPU alta.
+**Problem:** Many jobs, a slow system, or high CPU.
 
-**Otimizações:**
+**Optimizations:**
 
-1. **Reduzir frequência de scan**
+1. **Reduce the scan frequency**
 
-   Modifique `src/core/watcher.ts`:
+   Modify `src/core/watcher.ts`:
    ```typescript
-   // Aumente intervalo (default 30s)
+   // Increase the interval (default 30s)
    setInterval(() => scanCrontabIfChanged(), 60_000);
    ```
 
-2. **Reduzir retenção de logs**
+2. **Reduce log retention**
 
    ```bash
-   export CRONPULSE_LOG_RETENTION=20  # Padrão: 50
+   export CRONPULSE_LOG_RETENTION=20  # Default: 50
    ```
 
-3. **Filtrar jobs desnecessários**
+3. **Filter out unnecessary jobs**
 
-   Se muitos jobs sistem (ex: `/etc/cron.d/`), considere editar o detector para ignorar certos arquivos.
+   If there are many system jobs (from `/etc/cron.d/`, for example), consider editing the detector to ignore certain files.
 
-## Limitações Conhecidas
+## Known Limitations
 
-1. **Windows:** CronPulse detecta `schtasks` mas não modifica (read-only). Editar scheduled tasks ainda requer GUI do Windows.
+1. **Windows:** CronPulse detects `schtasks` but does not modify them (read-only). Editing scheduled tasks still requires the Windows GUI.
 
-2. **macOS Notarization:** Se distribuir como app macOS standalone, será necessário notarizar com Apple.
+2. **macOS notarization:** If you distribute it as a standalone macOS app, you will need to notarize it with Apple.
 
-3. **Docker:** Run Now executa **dentro do container**, não no host (a menos que configure `CRONPULSE_HOST_EXEC=true` com Docker socket mount).
+3. **Docker:** Run Now executes **inside the container**, not on the host (unless you configure `CRONPULSE_HOST_EXEC=true` with a Docker socket mount).
 
-4. **Buffer de Output:** Máximo 1MB de saída (stdout + stderr combinado). Comandos que excedem são truncados.
+4. **Output buffer:** At most 1MB of output (stdout + stderr combined). Commands that exceed it are truncated.
 
-5. **Scheduling:** CronPulse detecta quando jobs deveriam ter rodado, mas não "força" execução. É puramente um monitor.
+5. **Scheduling:** CronPulse detects when jobs should have run, but does not "force" execution. It is purely a monitor.
 
-## Contribuindo
+## Contributing
 
-CronPulse é open source! Para contribuir:
+CronPulse is open source. To contribute:
 
-1. Clone o repositório
-2. Crie uma branch: `git checkout -b feature/sua-feature`
-3. Faça commits: `git commit -am 'Add feature'`
-4. Push: `git push origin feature/sua-feature`
-5. Abra um Pull Request
+1. Clone the repository
+2. Create a branch: `git checkout -b feature/your-feature`
+3. Make commits: `git commit -am 'Add feature'`
+4. Push: `git push origin feature/your-feature`
+5. Open a Pull Request
 
-### Checklist de Código
+### Code Checklist
 
-- [ ] Rodar `pnpm lint:fix` antes de commitar
-- [ ] Rodar `pnpm typecheck` — sem erros TypeScript
-- [ ] Testar em Linux, macOS e Windows se possível
-- [ ] Incluir testes para novas features
-- [ ] Atualizar documentação se necessário
+- [ ] Run `pnpm lint:fix` before committing
+- [ ] Run `pnpm typecheck` — no TypeScript errors
+- [ ] Test on Linux, macOS, and Windows if possible
+- [ ] Include tests for new features
+- [ ] Update the documentation if needed
 
-## Suporte
+## Support
 
-Problemas ou dúvidas? Abra uma issue no GitHub com:
+Problems or questions? Open an issue on GitHub with:
 
-- Sistema operacional e versão
-- Versão do Node.js (`node --version`)
-- Passos para reproduzir o problema
-- Saída de `cronpulse --verbose`
+- Your operating system and version
+- Your Node.js version (`node --version`)
+- Steps to reproduce the problem
+- The output of `cronpulse --verbose`
 
-## Licença
+## License
 
-[Adicione licença aqui — ex: MIT]
+[Add a license here — for example, MIT]
 
-## Créditos
+## Credits
 
-CronPulse foi construído com:
+CronPulse is built with:
 
-- **Hono** — Framework HTTP ligero
-- **React 19** — UI declarativa
-- **Vite** — Build tool rápido
+- **Hono** — A lightweight HTTP framework
+- **React 19** — Declarative UI
+- **Vite** — A fast build tool
 - **TailwindCSS** — Utility-first CSS
-- **shadcn/ui** — Componentes UI
-- **better-sqlite3** — SQLite nativo para Node
-- **cron-parser** — Parse de expressões cron
+- **shadcn/ui** — UI components
+- **better-sqlite3** — Native SQLite for Node
+- **cron-parser** — Cron expression parsing
